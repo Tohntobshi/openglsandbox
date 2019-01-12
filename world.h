@@ -17,10 +17,17 @@ class World
   float cameraZ;
   float screenWidth;
   float screenHeight;
-  void updateViewProj();
   public:
   World();
   ~World();
+  void moveXTo(float x);
+  void moveYTo(float y);
+  void moveZTo(float z);
+  void rotateVertTo(float deg);
+  void rotateHorTo(float deg);
+  void rotateBy(float hor, float vert);
+  void moveBy(float x, float y, float z);
+  void updateViewProj();
   void addModel(Model*);
   void addShader(Shader*);
   void draw();

@@ -8,13 +8,15 @@ Shader::Shader()
     attribute vec2 position;
     // attribute vec3 color;
     // varying vec3 Color;
+    uniform mat4 view;
+    uniform mat4 projection;
     // uniform mat4 viewProj;
     // uniform mat4 model;
     void main()
     {
       // Color = color;
       // gl_Position = viewProj * model * vec4(position, 0.0, 1.0);
-      gl_Position = vec4(position, 0.0, 1.0);
+      gl_Position = projection * view * mat4(1.0) * vec4(position, 0.0, 1.0);
     }
   )glsl";
   const char* fragmentSource = R"glsl(
