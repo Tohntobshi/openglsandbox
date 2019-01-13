@@ -1,25 +1,37 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <list>
 #include "shader.h"
 
-struct occurence {
-  float x;
-  float y;
-  float z;
+class Occurence {
+private:
+  // float x;
+  // float y;
+  // float z;
+  // float pitch;
+  // float yaw;
+  // float roll;
+  // float scale;
   glm::mat4 model;
+public:
+  Occurence(float x, float y, float z, float pitch, float yaw, float roll, float scale);
+  const float* getMatrix() const;
 };
 
 class Model
 {
-  private:
+private:
   Shader* shader;
-  public:
-  std::list<occurence> occurences;
-  Model(Shader* shader);
-  ~Model();
+  void bind();
   unsigned int vbo;
   unsigned int ebo;
-  void bind();
+  std::list<Occurence> occurences;
+public:
+  Model(Shader* shader);
+  ~Model();
+  void addOccurence(float x, float y, float z, float pitch, float yaw, float roll, float scale);
+  void clearOccurences();
   void draw();
 };

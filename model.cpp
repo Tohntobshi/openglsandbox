@@ -47,5 +47,37 @@ void Model::bind()
 void Model::draw()
 {
   bind();
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  int uniformLocation = shader->getUniformLocation("model");
+  for (Occurence& occurence: occurences)
+  {
+    glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, occurence.getMatrix());
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  }
+}
+
+void Model::addOccurence(float x, float y, float z, float pitch, float yaw, float roll, float scale)
+{
+  occurences.emplace_back(x, y, z, pitch, yaw, roll, scale);
+}
+
+void Model::clearOccurences()
+{
+  occurences.clear();
+}
+
+Occurence::Occurence(float x, float y, float z, float pitch, float yaw, float roll, float scale)
+  // : x(x), y(y), z(z), pitch(pitch), yaw(yaw), roll(roll), scale(scale)
+{
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(x, y, z));
+  model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+  model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+  model = glm::rotate(model, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
+  model = glm::scale(model, glm::vec3(scale));
+  // here
+}
+
+const float* Occurence::getMatrix() const
+{
+  return glm::value_ptr(model);
 }

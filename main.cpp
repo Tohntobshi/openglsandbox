@@ -19,6 +19,9 @@ int main(int argc, char const *argv[])
   Model* model = new Model(shader);
   world.addModel(model);
   world.addShader(shader);
+  model->addOccurence(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+  model->addOccurence(3.0f, 0.0f, 0.0f, 0.0f, 45.0f, 45.0f, 2.0f);
+  model->addOccurence(0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
   bool mousepressed = false;
   EventSubscription sub = GameWindow::addEventListener([&](SDL_Event e){
     if(e.type == SDL_KEYDOWN) {

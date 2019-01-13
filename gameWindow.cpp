@@ -34,6 +34,7 @@ void GameWindow::iterate()
   {
     if (e.type == SDL_QUIT)
     {
+      destroyWindow();
       exit(0);
     }
     for (auto& callback: callbacks)
