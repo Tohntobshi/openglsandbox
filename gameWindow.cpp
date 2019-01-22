@@ -18,7 +18,11 @@ void GameWindow::createWindow(int width, int height)
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   window = SDL_CreateWindow("SDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
   context = SDL_GL_CreateContext(window);
+  glEnable(GL_DEPTH_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  // int maxVertAttrs;
+  // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertAttrs);
+  // std::cout << "GL_MAX_VERTEX_ATTRIBS " << maxVertAttrs << std::endl;
 }
 void GameWindow::destroyWindow()
 {
@@ -47,7 +51,7 @@ void GameWindow::iterate()
     }
     callbacksToRemove.clear();
   }
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   funcToIterate();
   SDL_GL_SwapWindow(window);
 }

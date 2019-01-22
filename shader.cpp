@@ -1,32 +1,32 @@
 #include "shader.h"
 #include <SDL2/SDL_opengles2.h>
+#include <iostream>
 
+void checkGLErrors();
 
 Shader::Shader()
 {
   const char* vertexSource = R"glsl(
-    attribute vec2 position;
-    // attribute vec3 color;
-    // varying vec3 Color;
+    attribute vec3 positionAttr;
+    attribute vec3 normalAttr;
     uniform mat4 model;
     uniform mat4 view;
     uniform mat4 projection;
-    // uniform mat4 viewProj;
-    // uniform mat4 model;
+    varying vec3 color;
     void main()
     {
-      // Color = color;
-      // gl_Position = viewProj * model * vec4(position, 0.0, 1.0);
-      gl_Position = projection * view * model * vec4(position, 0.0, 1.0);
+      vec3 norm = normalize(vec3(model * vec4(normalAttr, 0.0)));
+      vec3 lightDir = normalize(vec3(-1.0, -1.0, 0.0));
+      color = vec3(1.0) * (-0.5 * (dot(norm, lightDir) - 1.0));
+      gl_Position = projection * view * model * vec4(positionAttr, 1.0);
     }
   )glsl";
   const char* fragmentSource = R"glsl(
     precision mediump float;
-    // varying vec3 Color;
+    varying vec3 color;
     void main()
     {
-      // gl_FragColor = vec4(Color, 1.0);
-      gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+      gl_FragColor = vec4(color, 1.0);
     }
   )glsl";
 

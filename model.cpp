@@ -1,47 +1,111 @@
 #include "model.h"
 #include <SDL2/SDL_opengles2.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <list>
+#include <vector>
 
 void clearGlErrors();
 void checkGLErrors();
 
 
-Model::Model(Shader* shader)
+Model::Model(Shader* shader, std::string filepath)
   : shader(shader)
 {
-
-  float vertices[] = {
-    -0.5f,  0.5f,// Top-left
-    0.5f,  0.5f, // Top-right
-    0.5f, -0.5f,// Bottom-right
-    -0.5f, -0.5f, // Bottom-left
-  };
-  unsigned int elements[] = {
-    0, 1, 2,
-    2, 3, 0
-  };
-
+  std::list<glm::vec3> verticesList;
+  std::list<unsigned int> vertexElementsList;
+  std::list<glm::vec3> normalsList;
+  std::list<unsigned int> normalElementsList;
+  facesCount = 0;
+  std::ifstream file(filepath);
+  if (!file.is_open())
+  {
+    std::cout << "Cannot open file " << filepath << std::endl;
+    exit(1);
+  }
+  while(file)
+  {
+    std::string line;
+    getline(file, line);
+    
+    if (line.substr(0, 2) == "v ")
+    {
+      float x;
+      float y;
+      float z;
+      if (sscanf(line.c_str(), "v %f %f %f\n", &x, &y, &z) != 3)
+      {
+        std::cout << "Cannot read file " << filepath << std::endl;
+        exit(1);
+      }
+      verticesList.push_back({ x, y, z });
+    }
+    else if (line.substr(0, 3) == "vn ")
+    {
+      float x;
+      float y;
+      float z;
+      if (sscanf(line.c_str(), "vn %f %f %f\n", &x, &y, &z) != 3)
+      {
+        std::cout << "Cannot read file " << filepath << std::endl;
+        exit(1);
+      }
+      normalsList.push_back({ x, y, z });
+    }
+    else if (line.substr(0, 2) == "f ")
+    {
+      facesCount++;
+      unsigned int vel1, vel2, vel3, nel1, nel2, nel3;
+      if (sscanf(line.c_str(), "f %d//%d %d//%d %d//%d\n", &vel1, &nel1, &vel2, &nel2, &vel3, &nel3) != 6)
+      {
+        std::cout << "Cannot read file " << filepath << std::endl;
+        exit(1);
+      }
+      vertexElementsList.push_back(vel1 - 1);
+      vertexElementsList.push_back(vel2 - 1);
+      vertexElementsList.push_back(vel3 - 1);
+      normalElementsList.push_back(nel1 - 1);
+      normalElementsList.push_back(nel2 - 1);
+      normalElementsList.push_back(nel3 - 1);
+    }
+  }
+  file.close();
+  std::vector<glm::vec3> vertices = { verticesList.begin(), verticesList.end() };
+  std::vector<glm::vec3> normals = { normalsList.begin(), normalsList.end() };
+  std::list<unsigned int>::iterator vertexElementsIterator = vertexElementsList.begin();
+  std::list<unsigned int>::iterator normalElementsIterator = normalElementsList.begin();
+  float* data = new float[facesCount * 3 * 2 * 3];
+  for (unsigned int i = 0; i < facesCount * 3; i++)
+  {
+    glm::vec3& currentVertex = vertices[*vertexElementsIterator];
+    glm::vec3& currentNormal = normals[*normalElementsIterator];
+    data[i*6 + 0] = currentVertex.x;
+    data[i*6 + 1] = currentVertex.y;
+    data[i*6 + 2] = currentVertex.z;
+    data[i*6 + 3] = currentNormal.x;
+    data[i*6 + 4] = currentNormal.y;
+    data[i*6 + 5] = currentNormal.z;
+    vertexElementsIterator++;
+    normalElementsIterator++;
+  }
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glGenBuffers(1, &ebo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * facesCount * 3 * 2 * 3, data, GL_STATIC_DRAW);
+  delete[] data;
 }
 
 Model::~Model()
 {
-  glDeleteBuffers(1, &ebo);
   glDeleteBuffers(1, &vbo);
 }
 
 void Model::bind()
 {
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   shader->use();
-  glVertexAttribPointer(shader->getAttributeLocation("position"), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glVertexAttribPointer(shader->getAttributeLocation("positionAttr"), 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), NULL);
+  glVertexAttribPointer(shader->getAttributeLocation("normalAttr"), 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 }
 
 void Model::draw()
@@ -51,7 +115,7 @@ void Model::draw()
   for (Occurence& occurence: occurences)
   {
     glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, occurence.getMatrix());
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, facesCount * 3); //draw arrays
   }
 }
 
@@ -74,7 +138,6 @@ Occurence::Occurence(float x, float y, float z, float pitch, float yaw, float ro
   model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
   model = glm::rotate(model, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
   model = glm::scale(model, glm::vec3(scale));
-  // here
 }
 
 const float* Occurence::getMatrix() const

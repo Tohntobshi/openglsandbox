@@ -4,6 +4,10 @@
 #include "shader.h"
 #include <list>
 
+enum CameraMode {
+  FIRST_PERSON,
+  THIRD_PERSON
+};
 
 class World
 {
@@ -17,6 +21,7 @@ class World
   float cameraZ;
   float screenWidth;
   float screenHeight;
+  CameraMode cameraMode;
   public:
   World();
   ~World();
@@ -27,6 +32,7 @@ class World
   void rotateHorTo(float deg);
   void rotateBy(float hor, float vert);
   void moveBy(float x, float y, float z);
+  void changeCameraMode(CameraMode mode);
   void updateViewProj();
   void addModel(Model*);
   void addShader(Shader*);

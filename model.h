@@ -26,10 +26,10 @@ private:
   Shader* shader;
   void bind();
   unsigned int vbo;
-  unsigned int ebo;
   std::list<Occurence> occurences;
+  unsigned int facesCount;
 public:
-  Model(Shader* shader);
+  Model(Shader* shader, std::string filepath);
   ~Model();
   void addOccurence(float x, float y, float z, float pitch, float yaw, float roll, float scale);
   void clearOccurences();

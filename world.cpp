@@ -43,15 +43,25 @@ void World::draw()
 
 void World::updateViewProj()
 {
-  glm::vec3 camPosition = glm::vec3(cameraX, cameraY, cameraZ);
+  glm::vec3 camPosition;
+  glm::vec3 camTarget;
   glm::vec3 camDirection;
+  glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
   camDirection.x = sin(glm::radians(horizontalRotation)) * cos(glm::radians(verticalRotation));
   camDirection.y = sin(glm::radians(verticalRotation));
   camDirection.z = cos(glm::radians(horizontalRotation)) * cos(glm::radians(verticalRotation));
   camDirection = glm::normalize(camDirection);
-  glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-  glm::mat4 viewMatrix = glm::lookAt(camPosition, camPosition + camDirection, camUp);
+  if (cameraMode == FIRST_PERSON)
+  {
+    camPosition = glm::vec3(cameraX, cameraY, cameraZ);
+    camTarget = camPosition + camDirection;
+  }
+  else
+  {
+    camTarget = glm::vec3(cameraX, cameraY, cameraZ);
+    camPosition = camTarget + (camDirection * 10.0f);
+  }
+  glm::mat4 viewMatrix = glm::lookAt(camPosition, camTarget, camUp);
   glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
   for (auto shader: shaders)
   {
@@ -97,4 +107,8 @@ void World::rotateHorTo(float deg)
 void World::rotateVertTo(float deg)
 {
   verticalRotation = deg;
+}
+
+void World::changeCameraMode(CameraMode mode) {
+  cameraMode = mode;
 }
