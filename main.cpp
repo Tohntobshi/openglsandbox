@@ -31,19 +31,23 @@ int main(int argc, char const *argv[])
       switch(e.key.keysym.scancode)
       {
         case SDL_SCANCODE_A:
-          world.moveBy(0.1f, 0.0f, 0.0f);
+          // world.moveBy(0.1f, 0.0f, 0.0f);
+          world.moveSideways(-1.0);
           world.updateViewProj();
           break;
         case SDL_SCANCODE_D:
-          world.moveBy(-0.1f, 0.0f, 0.0f);
+          // world.moveBy(-0.1f, 0.0f, 0.0f);
+          world.moveSideways(1.0);
           world.updateViewProj();
           break;
         case SDL_SCANCODE_W:
-          world.moveBy(0.0f, 0.0f, 1.0f);
+          // world.moveBy(0.0f, 0.0f, 1.0f);
+          world.moveStraight(1.0f);
           world.updateViewProj();
           break;
         case SDL_SCANCODE_S:
-          world.moveBy(0.0f, 0.0f, -1.0f);
+          // world.moveBy(0.0f, 0.0f, -1.0f);
+          world.moveStraight(-1.0f);
           world.updateViewProj();
           break;
         case SDL_SCANCODE_F:

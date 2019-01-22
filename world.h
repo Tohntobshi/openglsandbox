@@ -25,6 +25,8 @@ class World
   public:
   World();
   ~World();
+  void moveStraight(float amount);
+  void moveSideways(float amount);
   void moveXTo(float x);
   void moveYTo(float y);
   void moveZTo(float z);

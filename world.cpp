@@ -112,3 +112,30 @@ void World::rotateVertTo(float deg)
 void World::changeCameraMode(CameraMode mode) {
   cameraMode = mode;
 }
+
+void World::moveStraight(float amount)
+{
+  glm::vec3 camDirection;
+  camDirection.x = sin(glm::radians(horizontalRotation)) * cos(glm::radians(verticalRotation));
+  camDirection.y = sin(glm::radians(verticalRotation));
+  camDirection.z = cos(glm::radians(horizontalRotation)) * cos(glm::radians(verticalRotation));
+  camDirection = glm::normalize(camDirection);
+  glm::vec3 movement = camDirection * amount;
+  cameraX += movement.x;
+  cameraY += movement.y;
+  cameraZ += movement.z;
+}
+
+void World::moveSideways(float amount)
+{
+  glm::vec3 camDirection;
+  glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+  camDirection.x = sin(glm::radians(horizontalRotation)) * cos(glm::radians(verticalRotation));
+  camDirection.y = sin(glm::radians(verticalRotation));
+  camDirection.z = cos(glm::radians(horizontalRotation)) * cos(glm::radians(verticalRotation));
+  glm::vec3 right = glm::normalize(glm::cross(camDirection, camUp));
+  glm::vec3 movement = right * amount;
+  cameraX += movement.x;
+  cameraY += movement.y;
+  cameraZ += movement.z;
+}
