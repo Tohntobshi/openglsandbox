@@ -2,13 +2,13 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengles2.h>
 #include <functional>
+#include <unordered_map>
+#include <list>
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #else
 #include <thread>
 #include <chrono>
-#include <unordered_map>
-#include <list>
 #endif
 
 typedef std::function<void (SDL_Event)> eventCallback;

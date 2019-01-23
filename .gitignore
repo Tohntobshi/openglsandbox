@@ -5,4 +5,5 @@
 /Makefile
 /dist/a.out.js
 /dist/a.out.wasm
+/dist/a.out.data
 /.firebase
