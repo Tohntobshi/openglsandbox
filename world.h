@@ -5,8 +5,8 @@
 #include <list>
 
 enum CameraMode {
+  THIRD_PERSON,
   FIRST_PERSON,
-  THIRD_PERSON
 };
 
 class World

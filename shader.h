@@ -12,8 +12,7 @@ class Shader
   std::unordered_map<std::string, int> uniforms;
   public:
   int getShaderId();
-  Shader();
-  Shader(char* file);
+  Shader(std::string filepath);
   unsigned int getAttributeLocation(std::string attr);
   int getUniformLocation(std::string uni);
   void use();

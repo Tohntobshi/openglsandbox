@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
   clearGlErrors();
   GameWindow::createWindow(640, 480);
   World world;
-  Shader* shader = new Shader();
+  Shader* shader = new Shader("./assets/basicShader.glsl");
   Model* mug = new Model(shader, "./assets/mug.obj");
   world.addModel(mug);
   world.addShader(shader);

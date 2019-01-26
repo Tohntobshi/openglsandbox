@@ -43,6 +43,7 @@ void World::draw()
 
 void World::updateViewProj()
 {
+  float lightPosition[] = { 3.0f, 3.0f, 3.0f };
   glm::vec3 camPosition;
   glm::vec3 camTarget;
   glm::vec3 camDirection;
@@ -68,6 +69,8 @@ void World::updateViewProj()
     shader->use();
     glUniformMatrix4fv(shader->getUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(shader->getUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniform3fv(shader->getUniformLocation("ligtPos"), 1, lightPosition);
+    glUniform3fv(shader->getUniformLocation("camPos"), 1, glm::value_ptr(camPosition));
   }
 }
 

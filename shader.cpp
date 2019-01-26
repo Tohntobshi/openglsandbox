@@ -1,41 +1,57 @@
 #include "shader.h"
 #include <SDL2/SDL_opengles2.h>
 #include <iostream>
+#include <fstream>
 
 void checkGLErrors();
 
-Shader::Shader()
+Shader::Shader(std::string filepath)
 {
-  const char* vertexSource = R"glsl(
-    attribute vec3 positionAttr;
-    attribute vec3 normalAttr;
-    uniform mat4 model;
-    uniform mat4 view;
-    uniform mat4 projection;
-    varying vec3 color;
-    void main()
+  std::ifstream file(filepath);
+  if (!file.is_open()) {
+    std::cout << "Cannot open file " << filepath << std::endl;
+    exit(1);
+  }
+  std::string vertexSource;
+  std::string fragmentSource;
+  unsigned short which = 0;
+  while(file)
+  {
+    std::string line;
+    getline(file, line);
+    if (line.substr(0, 9) == "#blockend")
     {
-      vec3 norm = normalize(vec3(model * vec4(normalAttr, 0.0)));
-      vec3 lightDir = normalize(vec3(-1.0, -1.0, 0.0));
-      color = vec3(1.0) * (-0.5 * (dot(norm, lightDir) - 1.0));
-      gl_Position = projection * view * model * vec4(positionAttr, 1.0);
+      which = 0;
+      continue;
     }
-  )glsl";
-  const char* fragmentSource = R"glsl(
-    precision mediump float;
-    varying vec3 color;
-    void main()
+    if (line.substr(0, 7) == "#vertex")
     {
-      gl_FragColor = vec4(color, 1.0);
+      which = 1;
+      continue;
     }
-  )glsl";
-
+    if (line.substr(0, 9) == "#fragment")
+    {
+      which = 2;
+      continue;
+    }
+    if (which == 1)
+    {
+      vertexSource += line;
+    }
+    if (which == 2)
+    {
+      fragmentSource += line;
+    }
+  }
+  file.close();
+  const char* _vertexSource = vertexSource.c_str();
+  const char* _fragmentSource = fragmentSource.c_str();
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexSource, NULL);
+  glShaderSource(vertexShader, 1, &_vertexSource, NULL);
   glCompileShader(vertexShader);
 
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+  glShaderSource(fragmentShader, 1, &_fragmentSource, NULL);
   glCompileShader(fragmentShader);
 
   shaderProgram = glCreateProgram();
