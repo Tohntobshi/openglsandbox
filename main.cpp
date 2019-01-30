@@ -14,12 +14,20 @@ int main(int argc, char const *argv[])
   clearGlErrors();
   GameWindow::createWindow(640, 480);
   World world;
-  Shader* shader = new Shader("./assets/basicShader.glsl");
-  Model* mug = new Model(shader, "./assets/mug.obj");
+  Shader* basicshader = new Shader("./assets/basicShader.glsl");
+  Shader* texturedshader = new Shader("./assets/textured.glsl");
+  Model* mug = new Model(basicshader, "./assets/mug.obj");
+  
+  Model* donut = new Model(texturedshader, "./assets/donut2.obj", "./assets/donut2.png");
+  
   world.addModel(mug);
-  world.addShader(shader);
+  world.addModel(donut);
+  world.addShader(basicshader);
+  world.addShader(texturedshader);
+  
   mug->addOccurence(0.0f, 0.0f, 10.0f, 0.0f, 90.0f, 0.0f, 1.0f);
   mug->addOccurence(10.0f, 0.0f, 0.0f, 0.0f, 45.0f, 45.0f, 2.0f);
+  donut->addOccurence(4.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 1.0f);
   bool mousepressed = false;
   EventSubscription sub = GameWindow::addEventListener([&](SDL_Event e){
     if(e.type == SDL_KEYDOWN) {
@@ -65,10 +73,13 @@ int main(int argc, char const *argv[])
       world.updateViewProj();
     }
   });
+  
+  world.draw();
+  
   GameWindow::startLoop([&]()
   {
     world.draw();
-    checkGLErrors();
+    // checkGLErrors();
   });
   return 0;
 }

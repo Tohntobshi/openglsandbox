@@ -36,11 +36,11 @@ Shader::Shader(std::string filepath)
     }
     if (which == 1)
     {
-      vertexSource += line;
+      vertexSource += (line + "\n");
     }
     if (which == 2)
     {
-      fragmentSource += line;
+      fragmentSource += (line + "\n");
     }
   }
   file.close();

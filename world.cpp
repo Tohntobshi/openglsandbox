@@ -6,9 +6,13 @@
 #include <iostream>
 
 
-World::World()
-{ 
-}
+World::World():
+  verticalRotation(0.0f),
+  horizontalRotation(0.0f),
+  cameraX(0.0f),
+  cameraY(0.0f),
+  cameraZ(0.0f)
+{}
 
 World::~World()
 {
@@ -43,7 +47,7 @@ void World::draw()
 
 void World::updateViewProj()
 {
-  float lightPosition[] = { 3.0f, 3.0f, 3.0f };
+  float lightPosition[] = { 4.0f, 4.0f, 4.0f };
   glm::vec3 camPosition;
   glm::vec3 camTarget;
   glm::vec3 camDirection;

@@ -26,10 +26,13 @@ private:
   Shader* shader;
   void bind();
   unsigned int vbo;
+  unsigned int texture;
   std::list<Occurence> occurences;
   unsigned int facesCount;
+  bool textured;
 public:
   Model(Shader* shader, std::string filepath);
+  Model(Shader* shader, std::string objpath, std::string texpath);
   ~Model();
   void addOccurence(float x, float y, float z, float pitch, float yaw, float roll, float scale);
   void clearOccurences();

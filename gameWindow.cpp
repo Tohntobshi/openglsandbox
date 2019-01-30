@@ -20,6 +20,7 @@ void GameWindow::createWindow(int width, int height)
   context = SDL_GL_CreateContext(window);
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  // glDisable(GL_CULL_FACE);
   // int maxVertAttrs;
   // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertAttrs);
   // std::cout << "GL_MAX_VERTEX_ATTRIBS " << maxVertAttrs << std::endl;

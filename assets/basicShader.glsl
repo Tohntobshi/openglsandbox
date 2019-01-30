@@ -24,6 +24,7 @@ varying vec3 fragPos;
 varying vec3 norm;
 void main()
 {
+  // suka
   vec3 vasheNorm = normalize(norm);
   vec3 lightDir = normalize(fragPos - lightPos);
   vec3 reflectionDir = reflect(lightDir, vasheNorm);

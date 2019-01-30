@@ -6,6 +6,7 @@ set(TARGETS main.cpp gameWindow.cpp model.cpp world.cpp glErrChecks.cpp shader.c
 add_executable( hellogl ${TARGETS} )
 
 target_link_libraries(hellogl SDL2)
+target_link_libraries(hellogl SOIL)
 target_link_libraries(hellogl GLESv2)
 target_link_libraries(hellogl pthread)
 

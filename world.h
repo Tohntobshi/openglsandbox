@@ -19,8 +19,6 @@ class World
   float cameraX;
   float cameraY;
   float cameraZ;
-  float screenWidth;
-  float screenHeight;
   CameraMode cameraMode;
   public:
   World();
