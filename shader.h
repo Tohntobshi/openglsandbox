@@ -2,19 +2,22 @@
 #include <unordered_map>
 #include <string>
 
+using std::string;
+using std::unordered_map;
+
 class Shader
 {
   private:
   unsigned int vertexShader;
   unsigned int fragmentShader;
   unsigned int shaderProgram;
-  std::unordered_map<std::string, unsigned int> attributes;
-  std::unordered_map<std::string, int> uniforms;
+  unordered_map<string, unsigned int> attributes;
+  unordered_map<string, int> uniforms;
   public:
   int getShaderId();
-  Shader(std::string filepath);
-  unsigned int getAttributeLocation(std::string attr);
-  int getUniformLocation(std::string uni);
+  Shader(string filepath);
+  unsigned int getAttributeLocation(string attr);
+  int getUniformLocation(string uni);
   void use();
   ~Shader();
 };

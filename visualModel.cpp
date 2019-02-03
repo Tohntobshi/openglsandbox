@@ -1,33 +1,40 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "model.h"
+#include "visualModel.h"
 #include <SDL2/SDL_opengles2.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <stb_image.h>
+#include <list>
+
+using std::list;
+using std::ifstream;
+using std::cout;
+using std::endl;
+using std::vector;
 
 void clearGlErrors();
 void checkGLErrors();
 
 
-Model::Model(Shader* shader, std::string filepath)
+VisualModel::VisualModel(shared_ptr<Shader> shader, string filepath)
   : shader(shader)
 {
-  std::list<glm::vec3> verticesList;
-  std::list<unsigned int> vertexElementsList;
-  std::list<glm::vec3> normalsList;
-  std::list<unsigned int> normalElementsList;
+  list<glm::vec3> verticesList;
+  list<unsigned int> vertexElementsList;
+  list<glm::vec3> normalsList;
+  list<unsigned int> normalElementsList;
   facesCount = 0;
-  std::ifstream file(filepath);
+  ifstream file(filepath);
   if (!file.is_open())
   {
-    std::cout << "Cannot open file " << filepath << std::endl;
+    cout << "Cannot open file " << filepath << endl;
     exit(1);
   }
   while(file)
   {
-    std::string line;
+    string line;
     getline(file, line);
     
     if (line.substr(0, 2) == "v ")
@@ -37,7 +44,7 @@ Model::Model(Shader* shader, std::string filepath)
       float z;
       if (sscanf(line.c_str(), "v %f %f %f\n", &x, &y, &z) != 3)
       {
-        std::cout << "Cannot read file " << filepath << std::endl;
+        cout << "Cannot read file " << filepath << endl;
         exit(1);
       }
       verticesList.push_back({ x, y, z });
@@ -49,7 +56,7 @@ Model::Model(Shader* shader, std::string filepath)
       float z;
       if (sscanf(line.c_str(), "vn %f %f %f\n", &x, &y, &z) != 3)
       {
-        std::cout << "Cannot read file " << filepath << std::endl;
+        cout << "Cannot read file " << filepath << endl;
         exit(1);
       }
       normalsList.push_back({ x, y, z });
@@ -60,7 +67,7 @@ Model::Model(Shader* shader, std::string filepath)
       unsigned int vel1, vel2, vel3, nel1, nel2, nel3;
       if (sscanf(line.c_str(), "f %d//%d %d//%d %d//%d\n", &vel1, &nel1, &vel2, &nel2, &vel3, &nel3) != 6)
       {
-        std::cout << "Cannot read file " << filepath << std::endl;
+        cout << "Cannot read file " << filepath << endl;
         exit(1);
       }
       vertexElementsList.push_back(vel1 - 1);
@@ -72,10 +79,10 @@ Model::Model(Shader* shader, std::string filepath)
     }
   }
   file.close();
-  std::vector<glm::vec3> vertices = { verticesList.begin(), verticesList.end() };
-  std::vector<glm::vec3> normals = { normalsList.begin(), normalsList.end() };
-  std::list<unsigned int>::iterator vertexElementsIterator = vertexElementsList.begin();
-  std::list<unsigned int>::iterator normalElementsIterator = normalElementsList.begin();
+  vector<glm::vec3> vertices = { verticesList.begin(), verticesList.end() };
+  vector<glm::vec3> normals = { normalsList.begin(), normalsList.end() };
+  list<unsigned int>::iterator vertexElementsIterator = vertexElementsList.begin();
+  list<unsigned int>::iterator normalElementsIterator = normalElementsList.begin();
   float* data = new float[facesCount * 3 * 2 * 3];
   for (unsigned int i = 0; i < facesCount * 3; i++)
   {
@@ -96,25 +103,25 @@ Model::Model(Shader* shader, std::string filepath)
   delete[] data;
 }
 
-Model::Model(Shader* shader, std::string objpath, std::string texpath)
+VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpath)
   : shader(shader), textured(true)
 {
-  std::list<glm::vec3> verticesList;
-  std::list<unsigned int> vertexElementsList;
-  std::list<glm::vec2> texcoordsList;
-  std::list<unsigned int> texcoordElementsList;
-  std::list<glm::vec3> normalsList;
-  std::list<unsigned int> normalElementsList;
+  list<glm::vec3> verticesList;
+  list<unsigned int> vertexElementsList;
+  list<glm::vec2> texcoordsList;
+  list<unsigned int> texcoordElementsList;
+  list<glm::vec3> normalsList;
+  list<unsigned int> normalElementsList;
   facesCount = 0;
-  std::ifstream file(objpath);
+  ifstream file(objpath);
   if (!file.is_open())
   {
-    std::cout << "Cannot open file " << objpath << std::endl;
+    cout << "Cannot open file " << objpath << endl;
     exit(1);
   }
   while(file)
   {
-    std::string line;
+    string line;
     getline(file, line);
     
     if (line.substr(0, 2) == "v ")
@@ -124,7 +131,7 @@ Model::Model(Shader* shader, std::string objpath, std::string texpath)
       float z;
       if (sscanf(line.c_str(), "v %f %f %f\n", &x, &y, &z) != 3)
       {
-        std::cout << "Cannot read file " << objpath << std::endl;
+        cout << "Cannot read file " << objpath << endl;
         exit(1);
       }
       verticesList.push_back({ x, y, z });
@@ -135,7 +142,7 @@ Model::Model(Shader* shader, std::string objpath, std::string texpath)
       float y;
       if (sscanf(line.c_str(), "vt %f %f\n", &x, &y) != 2)
       {
-        std::cout << "Cannot read file " << objpath << std::endl;
+        cout << "Cannot read file " << objpath << endl;
         exit(1);
       }
       texcoordsList.push_back({ x, y });
@@ -147,7 +154,7 @@ Model::Model(Shader* shader, std::string objpath, std::string texpath)
       float z;
       if (sscanf(line.c_str(), "vn %f %f %f\n", &x, &y, &z) != 3)
       {
-        std::cout << "Cannot read file " << objpath << std::endl;
+        cout << "Cannot read file " << objpath << endl;
         exit(1);
       }
       normalsList.push_back({ x, y, z });
@@ -158,7 +165,7 @@ Model::Model(Shader* shader, std::string objpath, std::string texpath)
       unsigned int vel1, vel2, vel3, nel1, nel2, nel3, tel1, tel2, tel3;
       if (sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d\n", &vel1, &tel1, &nel1, &vel2, &tel2, &nel2, &vel3, &tel3, &nel3) != 9)
       {
-        std::cout << "Cannot read file " << objpath << std::endl;
+        cout << "Cannot read file " << objpath << endl;
         exit(1);
       }
       vertexElementsList.push_back(vel1 - 1);
@@ -173,12 +180,12 @@ Model::Model(Shader* shader, std::string objpath, std::string texpath)
     }
   }
   file.close();
-  std::vector<glm::vec3> vertices = { verticesList.begin(), verticesList.end() };
-  std::vector<glm::vec3> normals = { normalsList.begin(), normalsList.end() };
-  std::vector<glm::vec2> texcoords = { texcoordsList.begin(), texcoordsList.end() };
-  std::list<unsigned int>::iterator vertexElementsIterator = vertexElementsList.begin();
-  std::list<unsigned int>::iterator normalElementsIterator = normalElementsList.begin();
-  std::list<unsigned int>::iterator texcoordElementsIterator = texcoordElementsList.begin();
+  vector<glm::vec3> vertices = { verticesList.begin(), verticesList.end() };
+  vector<glm::vec3> normals = { normalsList.begin(), normalsList.end() };
+  vector<glm::vec2> texcoords = { texcoordsList.begin(), texcoordsList.end() };
+  list<unsigned int>::iterator vertexElementsIterator = vertexElementsList.begin();
+  list<unsigned int>::iterator normalElementsIterator = normalElementsList.begin();
+  list<unsigned int>::iterator texcoordElementsIterator = texcoordElementsList.begin();
   float* data = new float[facesCount * 3 /* points*/ * (3 + 3 + 2) /* vert + norm + texcoord*/];
   for (unsigned int i = 0; i < facesCount * 3; i++)
   {
@@ -213,20 +220,20 @@ Model::Model(Shader* shader, std::string objpath, std::string texpath)
   unsigned char* image = stbi_load(texpath.c_str(), &width, &height, &nrCh, 4);
   if (!image)
   {
-    std::cout << "Cannot read file " << texpath << std::endl;
+    cout << "Cannot read file " << texpath << endl;
     exit(1);
   }
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
   stbi_image_free(image);  
 }
 
-Model::~Model()
+VisualModel::~VisualModel()
 {
   glDeleteBuffers(1, &vbo);
   glDeleteTextures(1, &texture);
 }
 
-void Model::bind()
+void VisualModel::bind()
 {
   shader->use();
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -244,39 +251,36 @@ void Model::bind()
   }
 }
 
-void Model::draw()
+void VisualModel::draw(float* viewMatrix)
 {
-  bind();
+  // bind();
   int uniformLocation = shader->getUniformLocation("model");
-  for (Occurence& occurence: occurences)
-  {
-    glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, occurence.getMatrix());
-    glDrawArrays(GL_TRIANGLES, 0, facesCount * 3); //draw arrays
-  }
+  glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, viewMatrix);
+  glDrawArrays(GL_TRIANGLES, 0, facesCount * 3);
 }
 
-void Model::addOccurence(float x, float y, float z, float pitch, float yaw, float roll, float scale)
-{
-  occurences.emplace_back(x, y, z, pitch, yaw, roll, scale);
-}
 
-void Model::clearOccurences()
-{
-  occurences.clear();
-}
+// Occurence::Occurence(float x, float y, float z, float pitch, float yaw, float roll, float scale)
+// {
+//   model = glm::mat4(1.0f);
+//   model = glm::translate(model, glm::vec3(x, y, z));
+//   model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+//   model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+//   model = glm::rotate(model, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
+//   model = glm::scale(model, glm::vec3(scale));
+// }
 
-Occurence::Occurence(float x, float y, float z, float pitch, float yaw, float roll, float scale)
-  // : x(x), y(y), z(z), pitch(pitch), yaw(yaw), roll(roll), scale(scale)
-{
-  model = glm::mat4(1.0f);
-  model = glm::translate(model, glm::vec3(x, y, z));
-  model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-  model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-  model = glm::rotate(model, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
-  model = glm::scale(model, glm::vec3(scale));
-}
+// void Occurence::update(float x, float y, float z, float pitch, float yaw, float roll, float scale)
+// {
+//   model = glm::mat4(1.0f);
+//   model = glm::translate(model, glm::vec3(x, y, z));
+//   model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+//   model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+//   model = glm::rotate(model, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
+//   model = glm::scale(model, glm::vec3(scale));
+// }
 
-const float* Occurence::getMatrix() const
-{
-  return glm::value_ptr(model);
-}
+// const float* Occurence::getMatrix() const
+// {
+//   return glm::value_ptr(model);
+// }

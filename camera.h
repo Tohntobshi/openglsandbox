@@ -1,28 +1,29 @@
 #pragma once
 
-#include "model.h"
 #include "shader.h"
 #include <list>
+#include <memory>
+
+using std::list;
+using std::shared_ptr;
 
 enum CameraMode {
   THIRD_PERSON,
   FIRST_PERSON,
 };
 
-class World
+class Camera
 {
-  private:
-  std::list<Model*> objects;
-  std::list<Shader*> shaders;
+private:
+  std::list<shared_ptr<Shader>> shaders;
   float verticalRotation;
   float horizontalRotation;
   float cameraX;
   float cameraY;
   float cameraZ;
   CameraMode cameraMode;
-  public:
-  World();
-  ~World();
+public:
+  Camera();
   void moveStraight(float amount);
   void moveSideways(float amount);
   void moveXTo(float x);
@@ -34,7 +35,5 @@ class World
   void moveBy(float x, float y, float z);
   void changeCameraMode(CameraMode mode);
   void updateViewProj();
-  void addModel(Model*);
-  void addShader(Shader*);
-  void draw();
+  void addShader(shared_ptr<Shader> shader);
 };

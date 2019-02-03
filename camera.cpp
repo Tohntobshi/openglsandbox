@@ -1,12 +1,11 @@
-#include "world.h"
+#include "camera.h"
 #include <SDL2/SDL_opengles2.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 
 
-World::World():
+Camera::Camera():
   verticalRotation(0.0f),
   horizontalRotation(0.0f),
   cameraX(0.0f),
@@ -14,38 +13,14 @@ World::World():
   cameraZ(0.0f)
 {}
 
-World::~World()
-{
-  for(Model* object: objects)
-  {
-    delete object;
-  }
-  for(Shader* shader: shaders)
-  {
-    delete shader;
-  }
-}
-
-void World::addModel(Model* model)
-{
-  objects.emplace_back(model);
-}
-
-void World::addShader(Shader* shader)
+void Camera::addShader(shared_ptr<Shader> shader)
 {
   shaders.emplace_back(shader);
   updateViewProj();
 }
 
-void World::draw()
-{
-  for(Model* object: objects)
-  {
-    object->draw();
-  }
-}
 
-void World::updateViewProj()
+void Camera::updateViewProj()
 {
   float lightPosition[] = { 4.0f, 4.0f, 4.0f };
   glm::vec3 camPosition;
@@ -78,49 +53,49 @@ void World::updateViewProj()
   }
 }
 
-void World::moveBy(float x, float y, float z)
+void Camera::moveBy(float x, float y, float z)
 {
   cameraX += x;
   cameraY += y;
   cameraZ += z;
 }
 
-void World::rotateBy(float hor, float vert)
+void Camera::rotateBy(float hor, float vert)
 {
   horizontalRotation += hor;
   verticalRotation += vert;
 }
 
-void World::moveXTo(float x)
+void Camera::moveXTo(float x)
 {
   cameraX = x;
 }
 
-void World::moveYTo(float y)
+void Camera::moveYTo(float y)
 {
   cameraY = y;
 }
 
-void World::moveZTo(float z)
+void Camera::moveZTo(float z)
 {
   cameraZ = z;
 }
 
-void World::rotateHorTo(float deg)
+void Camera::rotateHorTo(float deg)
 {
   horizontalRotation = deg;
 }
 
-void World::rotateVertTo(float deg)
+void Camera::rotateVertTo(float deg)
 {
   verticalRotation = deg;
 }
 
-void World::changeCameraMode(CameraMode mode) {
+void Camera::changeCameraMode(CameraMode mode) {
   cameraMode = mode;
 }
 
-void World::moveStraight(float amount)
+void Camera::moveStraight(float amount)
 {
   glm::vec3 camDirection;
   camDirection.x = sin(glm::radians(horizontalRotation)) * cos(glm::radians(verticalRotation));
@@ -133,7 +108,7 @@ void World::moveStraight(float amount)
   cameraZ += movement.z;
 }
 
-void World::moveSideways(float amount)
+void Camera::moveSideways(float amount)
 {
   glm::vec3 camDirection;
   glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);

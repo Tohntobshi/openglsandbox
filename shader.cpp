@@ -3,21 +3,26 @@
 #include <iostream>
 #include <fstream>
 
+using std::ifstream;
+using std::cout;
+using std::endl;
+
+
 void checkGLErrors();
 
-Shader::Shader(std::string filepath)
+Shader::Shader(string filepath)
 {
-  std::ifstream file(filepath);
+  ifstream file(filepath);
   if (!file.is_open()) {
-    std::cout << "Cannot open file " << filepath << std::endl;
+    cout << "Cannot open file " << filepath << endl;
     exit(1);
   }
-  std::string vertexSource;
-  std::string fragmentSource;
+  string vertexSource;
+  string fragmentSource;
   unsigned short which = 0;
   while(file)
   {
-    std::string line;
+    string line;
     getline(file, line);
     if (line.substr(0, 9) == "#blockend")
     {
@@ -72,7 +77,7 @@ void Shader::use()
   glUseProgram(shaderProgram);
 }
 
-unsigned int Shader::getAttributeLocation(std::string attr) {
+unsigned int Shader::getAttributeLocation(string attr) {
   auto it = attributes.find(attr);
   if (it != attributes.end())
   {
@@ -84,7 +89,7 @@ unsigned int Shader::getAttributeLocation(std::string attr) {
   return location;
 }
 
-int Shader::getUniformLocation(std::string uni) {
+int Shader::getUniformLocation(string uni) {
   auto it = uniforms.find(uni);
   if (it != uniforms.end())
   {

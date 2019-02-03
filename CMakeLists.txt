@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project( HelloGL )
 
-set(TARGETS main.cpp gameWindow.cpp model.cpp world.cpp glErrChecks.cpp shader.cpp)
+set(TARGETS main.cpp gameWindow.cpp physicalModel.cpp physicalWorld.cpp glErrChecks.cpp shader.cpp
+visualModel.cpp camera.cpp)
 
 add_executable( hellogl ${TARGETS} )
 
