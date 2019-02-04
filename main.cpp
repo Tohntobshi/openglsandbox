@@ -25,10 +25,20 @@ int main(int argc, char const *argv[])
   camera.addShader(strangeShader);
   camera.addShader(texturedshader);
   PhysicalWorld world;
-  shared_ptr<PhysicalModel> phMug(new PhysicalModel(mug, vec3(1.0f, 0.0f, 0.0f)));
-  shared_ptr<PhysicalModel> phDonut(new PhysicalModel(donut, vec3(0.0f, 0.0f, 3.0f)));
+  shared_ptr<PhysicalModel> phMug0(new PhysicalModel(mug, vec3(0.0f, 0.0f, 0.0f), false));
+  shared_ptr<PhysicalModel> phMug1(new PhysicalModel(mug, vec3(3.0f, 2.0f, 0.0f), false));
+  shared_ptr<PhysicalModel> phMug2(new PhysicalModel(mug, vec3(6.0f, 4.0f, 0.0f), false));
+  shared_ptr<PhysicalModel> phMug3(new PhysicalModel(mug, vec3(9.0f, 6.0f, 0.0f), false));
+  shared_ptr<PhysicalModel> phMug4(new PhysicalModel(mug, vec3(12.0f, 9.0f, 0.0f), false));
+  shared_ptr<PhysicalModel> phMug5(new PhysicalModel(mug, vec3(15.0f, 11.0f, 0.0f), false));
+  shared_ptr<PhysicalModel> phDonut(new PhysicalModel(donut, vec3(0.0f, 10.0f, 0.0f), true));
   world.addActiveColidableModel(phDonut);
-  world.addActiveColidableModel(phMug);
+  world.addActiveColidableModel(phMug0);
+  world.addActiveColidableModel(phMug1);
+  world.addActiveColidableModel(phMug2);
+  world.addActiveColidableModel(phMug3);
+  world.addActiveColidableModel(phMug4);
+  world.addActiveColidableModel(phMug5);
   bool mousepressed = false;
   bool apressed = false;
   bool dpressed = false;
@@ -73,6 +83,9 @@ int main(int argc, char const *argv[])
           break;
         case SDL_SCANCODE_L:
           lpressed = true;
+          break;
+        case SDL_SCANCODE_SPACE:
+          phDonut->jump(1.0);
           break;
       }
     }
@@ -143,22 +156,16 @@ int main(int argc, char const *argv[])
       camera.moveStraight(-1.0f);
       camera.updateViewProj();
     }
-    if (ipressed)
-    {
-      phDonut->move(vec3(1.0f, 0.0f, 0.0f));
-    }
-    if (kpressed)
-    {
-      phDonut->move(vec3(-1.0f, 0.0f, 0.0f));
-    }
-    if (jpressed)
-    {
-      phDonut->move(vec3(0.0f, 0.0f, -1.0f));
-    }
-    if (lpressed)
-    {
-      phDonut->move(vec3(0.0f, 0.0f, 1.0f));
-    }
+
+    else if (ipressed && lpressed) { phDonut->move(vec3(1.0f, 0.0f, 1.0f)); }
+    else if (kpressed && lpressed) { phDonut->move(vec3(-1.0f, 0.0f, 1.0f)); }
+    else if (jpressed && kpressed) { phDonut->move(vec3(-1.0f, 0.0f, -1.0f)); }
+    else if (ipressed && jpressed) { phDonut->move(vec3(1.0f, 0.0f, -1.0f)); }
+
+    else if (ipressed) { phDonut->move(vec3(1.0f, 0.0f, 0.0f)); }
+    else if (kpressed) { phDonut->move(vec3(-1.0f, 0.0f, 0.0f)); }
+    else if (jpressed) { phDonut->move(vec3(0.0f, 0.0f, -1.0f)); }
+    else if (lpressed) { phDonut->move(vec3(0.0f, 0.0f, 1.0f)); }
     world.update();
     checkGLErrors();
   });

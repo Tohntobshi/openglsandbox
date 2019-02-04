@@ -16,19 +16,22 @@ private:
   shared_ptr<VisualModel> visualModel;
   vec3 position;
   vec3 direction;
-  float speed;
+  float fallSpeed;
+  float moveSpeed;
+  float jumpSpeed;
   float targetSpeed;
   float width;
-  float length;
   float height;
   float pitch;
   float yaw;
   float roll;
   float scale;
-  void update();
+  bool falling;
+  void update(vec3 movement, bool dontMove, bool dontFall, bool dontJump);
 public:
-  PhysicalModel(shared_ptr<VisualModel>, vec3 position);
+  PhysicalModel(shared_ptr<VisualModel>, vec3 position, bool falling);
   void move(vec3 direction);
   void move();
+  void jump(float speed);
 friend PhysicalWorld;
 };
