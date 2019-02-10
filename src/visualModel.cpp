@@ -258,29 +258,3 @@ void VisualModel::draw(float* viewMatrix)
   glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, viewMatrix);
   glDrawArrays(GL_TRIANGLES, 0, facesCount * 3);
 }
-
-
-// Occurence::Occurence(float x, float y, float z, float pitch, float yaw, float roll, float scale)
-// {
-//   model = glm::mat4(1.0f);
-//   model = glm::translate(model, glm::vec3(x, y, z));
-//   model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-//   model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-//   model = glm::rotate(model, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
-//   model = glm::scale(model, glm::vec3(scale));
-// }
-
-// void Occurence::update(float x, float y, float z, float pitch, float yaw, float roll, float scale)
-// {
-//   model = glm::mat4(1.0f);
-//   model = glm::translate(model, glm::vec3(x, y, z));
-//   model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-//   model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-//   model = glm::rotate(model, glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
-//   model = glm::scale(model, glm::vec3(scale));
-// }
-
-// const float* Occurence::getMatrix() const
-// {
-//   return glm::value_ptr(model);
-// }

@@ -1,5 +1,8 @@
 #include "gameWindow.h"
 #include <iostream>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_sdl.h"
+#include "imgui/imgui_impl_opengl3.h"
 #define GL_GLEXT_PROTOTYPES 1
 
 std::function<void ()> GameWindow::funcToIterate = [](){};
@@ -24,9 +27,18 @@ void GameWindow::createWindow(int width, int height)
   // int maxVertAttrs;
   // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertAttrs);
   // std::cout << "GL_MAX_VERTEX_ATTRIBS " << maxVertAttrs << std::endl;
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO(); (void)io;
+  ImGui::StyleColorsDark();
+  ImGui_ImplSDL2_InitForOpenGL(window, context);
+  ImGui_ImplOpenGL3_Init("#version 100");
 }
 void GameWindow::destroyWindow()
 {
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
   SDL_GL_DeleteContext(context);
   SDL_DestroyWindow(window);
   SDL_Quit();
@@ -34,9 +46,11 @@ void GameWindow::destroyWindow()
 
 void GameWindow::iterate()
 {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   SDL_Event e;
   while (SDL_PollEvent(&e))
   {
+    ImGui_ImplSDL2_ProcessEvent(&e);
     if (e.type == SDL_QUIT)
     {
       destroyWindow();
@@ -52,8 +66,12 @@ void GameWindow::iterate()
     }
     callbacksToRemove.clear();
   }
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplSDL2_NewFrame(window);
+  ImGui::NewFrame();
   funcToIterate();
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   SDL_GL_SwapWindow(window);
 }
 

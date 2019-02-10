@@ -5,6 +5,7 @@
 #include "physicalWorld.h"
 #include "shader.h"
 #include <memory>
+#include "imgui/imgui.h"
 
 using std::shared_ptr;
 using glm::vec3;
@@ -16,12 +17,12 @@ void checkGLErrors();
 int main(int argc, char const *argv[])
 {
   clearGlErrors();
-  GameWindow::createWindow(640, 480);
+  GameWindow::createWindow(1024, 768);
   Camera camera;
-  shared_ptr<Shader> strangeShader(new Shader("./assets/strange.glsl"));
-  shared_ptr<Shader> texturedshader(new Shader("./assets/textured.glsl"));
-  shared_ptr<VisualModel> mug(new VisualModel(strangeShader, "./assets/mug.obj"));
-  shared_ptr<VisualModel> donut(new VisualModel(texturedshader, "./assets/donut2.obj", "./assets/donut2.png"));
+  shared_ptr<Shader> strangeShader(new Shader("../assets/strange.glsl"));
+  shared_ptr<Shader> texturedshader(new Shader("../assets/textured.glsl"));
+  shared_ptr<VisualModel> mug(new VisualModel(strangeShader, "../assets/mug.obj"));
+  shared_ptr<VisualModel> donut(new VisualModel(texturedshader, "../assets/donut2.obj", "../assets/donut2.png"));
   camera.addShader(strangeShader);
   camera.addShader(texturedshader);
   PhysicalWorld world;
@@ -167,6 +168,9 @@ int main(int argc, char const *argv[])
     else if (jpressed) { phDonut->move(vec3(0.0f, 0.0f, -1.0f)); }
     else if (lpressed) { phDonut->move(vec3(0.0f, 0.0f, 1.0f)); }
     world.update();
+    ImGui::Begin("Hello, world!");
+    ImGui::Text("This is some useful text.");  
+    ImGui::End();
     checkGLErrors();
   });
   return 0;
