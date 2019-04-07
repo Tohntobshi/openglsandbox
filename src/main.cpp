@@ -1,14 +1,13 @@
 #include "gameWindow.h"
 #include <iostream>
-#include "visualModel.h"
-#include "camera.h"
-#include "physicalWorld.h"
-#include "shader.h"
-#include <memory>
 #include "imgui/imgui.h"
+#include "app.h"
+
 
 using std::shared_ptr;
 using glm::vec3;
+using std::unordered_map;
+using std::string;
 
 void clearGlErrors();
 void checkGLErrors();
@@ -18,28 +17,21 @@ int main(int argc, char const *argv[])
 {
   clearGlErrors();
   GameWindow::createWindow(1024, 768);
-  Camera camera;
-  shared_ptr<Shader> strangeShader(new Shader("../assets/strange.glsl"));
-  shared_ptr<Shader> texturedshader(new Shader("../assets/textured.glsl"));
-  shared_ptr<VisualModel> mug(new VisualModel(strangeShader, "../assets/mug.obj"));
-  shared_ptr<VisualModel> donut(new VisualModel(texturedshader, "../assets/donut2.obj", "../assets/donut2.png"));
-  camera.addShader(strangeShader);
-  camera.addShader(texturedshader);
-  PhysicalWorld world;
-  shared_ptr<PhysicalModel> phMug0(new PhysicalModel(mug, vec3(0.0f, 0.0f, 0.0f), false));
-  shared_ptr<PhysicalModel> phMug1(new PhysicalModel(mug, vec3(3.0f, 2.0f, 0.0f), false));
-  shared_ptr<PhysicalModel> phMug2(new PhysicalModel(mug, vec3(6.0f, 4.0f, 0.0f), false));
-  shared_ptr<PhysicalModel> phMug3(new PhysicalModel(mug, vec3(9.0f, 6.0f, 0.0f), false));
-  shared_ptr<PhysicalModel> phMug4(new PhysicalModel(mug, vec3(12.0f, 9.0f, 0.0f), false));
-  shared_ptr<PhysicalModel> phMug5(new PhysicalModel(mug, vec3(15.0f, 11.0f, 0.0f), false));
-  shared_ptr<PhysicalModel> phDonut(new PhysicalModel(donut, vec3(0.0f, 10.0f, 0.0f), true));
-  world.addActiveColidableModel(phDonut);
-  world.addActiveColidableModel(phMug0);
-  world.addActiveColidableModel(phMug1);
-  world.addActiveColidableModel(phMug2);
-  world.addActiveColidableModel(phMug3);
-  world.addActiveColidableModel(phMug4);
-  world.addActiveColidableModel(phMug5);
+  App app;
+
+  app.addShader("strange", "../assets/strange.glsl");
+  app.addShader("textured", "../assets/textured.glsl");
+  app.addVisualModel("mug", "strange", "../assets/mug.obj");
+  app.addVisualModel("donut", "textured", "../assets/donut2.obj", "../assets/donut2.png");
+  app.addPhysicalModel("mug0", "mug", vec3(0.0f, 0.0f, 0.0f), false);
+  app.addPhysicalModel("mug1", "mug", vec3(3.0f, 2.0f, 0.0f), false);
+  app.addPhysicalModel("mug2", "mug", vec3(6.0f, 4.0f, 0.0f), false);
+  app.addPhysicalModel("mug3", "mug", vec3(9.0f, 6.0f, 0.0f), false);
+  app.addPhysicalModel("mug4", "mug", vec3(12.0f, 9.0f, 0.0f), false);
+  app.addPhysicalModel("mug5", "mug", vec3(15.0f, 11.0f, 0.0f), false);
+  app.addPhysicalModel("donut", "donut", vec3(0.0f, 10.0f, 0.0f), true);
+  auto activeModel = app.getPhysicalModel("donut");
+
   bool mousepressed = false;
   bool apressed = false;
   bool dpressed = false;
@@ -49,6 +41,7 @@ int main(int argc, char const *argv[])
   bool ipressed = false;
   bool kpressed = false;
   bool jpressed = false;
+  char textinput[128] = "Hello";
   EventSubscription sub = GameWindow::addEventListener([&](SDL_Event e){
     if(e.type == SDL_KEYDOWN) {
       switch(e.key.keysym.scancode)
@@ -66,12 +59,10 @@ int main(int argc, char const *argv[])
           spressed = true;
           break;
         case SDL_SCANCODE_F:
-          camera.changeCameraMode(FIRST_PERSON);
-          camera.updateViewProj();
+          // app.changeCameraMode();
           break;
         case SDL_SCANCODE_T:
-          camera.changeCameraMode(THIRD_PERSON);
-          camera.updateViewProj();
+          // app.changeCameraMode(THIRD_PERSON);
           break;
         case SDL_SCANCODE_I:
           ipressed = true;
@@ -86,7 +77,7 @@ int main(int argc, char const *argv[])
           lpressed = true;
           break;
         case SDL_SCANCODE_SPACE:
-          phDonut->jump(1.0);
+          activeModel->jump(1.0);
           break;
       }
     }
@@ -129,8 +120,7 @@ int main(int argc, char const *argv[])
     }
     if (e.type == SDL_MOUSEMOTION && mousepressed)
     {
-      camera.rotateBy(e.motion.xrel, e.motion.yrel);
-      camera.updateViewProj();
+      app.rotateCameraBy(e.motion.xrel, e.motion.yrel);
     }
   });
 
@@ -139,37 +129,36 @@ int main(int argc, char const *argv[])
   {
     if (apressed)
     {
-      camera.moveSideways(-1.0);
-      camera.updateViewProj();
+      app.moveCameraSideways(-1.0);
     }
     if (dpressed)
     {
-      camera.moveSideways(1.0);
-      camera.updateViewProj();
+      app.moveCameraSideways(1.0);
     }
     if (wpressed)
     {
-      camera.moveStraight(1.0f);
-      camera.updateViewProj();
+      app.moveCameraStraight(1.0f);
     }
     if (spressed)
     {
-      camera.moveStraight(-1.0f);
-      camera.updateViewProj();
+      app.moveCameraStraight(-1.0f);
     }
 
-    else if (ipressed && lpressed) { phDonut->move(vec3(1.0f, 0.0f, 1.0f)); }
-    else if (kpressed && lpressed) { phDonut->move(vec3(-1.0f, 0.0f, 1.0f)); }
-    else if (jpressed && kpressed) { phDonut->move(vec3(-1.0f, 0.0f, -1.0f)); }
-    else if (ipressed && jpressed) { phDonut->move(vec3(1.0f, 0.0f, -1.0f)); }
+    else if (ipressed && lpressed) { activeModel->move(vec3(1.0f, 0.0f, 1.0f)); }
+    else if (kpressed && lpressed) { activeModel->move(vec3(-1.0f, 0.0f, 1.0f)); }
+    else if (jpressed && kpressed) { activeModel->move(vec3(-1.0f, 0.0f, -1.0f)); }
+    else if (ipressed && jpressed) { activeModel->move(vec3(1.0f, 0.0f, -1.0f)); }
 
-    else if (ipressed) { phDonut->move(vec3(1.0f, 0.0f, 0.0f)); }
-    else if (kpressed) { phDonut->move(vec3(-1.0f, 0.0f, 0.0f)); }
-    else if (jpressed) { phDonut->move(vec3(0.0f, 0.0f, -1.0f)); }
-    else if (lpressed) { phDonut->move(vec3(0.0f, 0.0f, 1.0f)); }
-    world.update();
-    ImGui::Begin("Hello, world!");
-    ImGui::Text("This is some useful text.");  
+    else if (ipressed) { activeModel->move(vec3(1.0f, 0.0f, 0.0f)); }
+    else if (kpressed) { activeModel->move(vec3(-1.0f, 0.0f, 0.0f)); }
+    else if (jpressed) { activeModel->move(vec3(0.0f, 0.0f, -1.0f)); }
+    else if (lpressed) { activeModel->move(vec3(0.0f, 0.0f, 1.0f)); }
+    app.update();
+    ImGui::Begin("Add model!");
+    ImGui::InputText("text", textinput, sizeof(char) * 128);
+    if (ImGui::Button("Add")) {
+      // add
+    }
     ImGui::End();
     checkGLErrors();
   });

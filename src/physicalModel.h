@@ -10,6 +10,8 @@ using glm::vec3;
 using glm::mat4;
 
 class PhysicalWorld;
+class ModelManager;
+class App;
 
 class PhysicalModel {
 private:
@@ -34,4 +36,6 @@ public:
   void move();
   void jump(float speed);
 friend PhysicalWorld;
+friend ModelManager;
+friend App;
 };
