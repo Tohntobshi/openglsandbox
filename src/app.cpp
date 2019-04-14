@@ -173,26 +173,51 @@ void App::addShader(string identifier, string shaderpath)
 {
   shared_ptr<Shader> shader(new Shader(shaderpath));
   shaders[identifier] = shader;
+  shaderNames.push_back(identifier);
 }
 
 void App::addVisualModel(string identifier, string shaderId, string modelpath)
 {
   shared_ptr<VisualModel> visModel(new VisualModel(shaders[shaderId], modelpath));
   visual_models[identifier] = visModel;
+  visModelNames.push_back(identifier);
 }
 
 void App::addVisualModel(string identifier, string shaderId, string modelpath, string texturepath)
 {
   shared_ptr<VisualModel> visModel(new VisualModel(shaders[shaderId], modelpath, texturepath));
   visual_models[identifier] = visModel;
+  visModelNames.push_back(identifier);
 }
 
 void App::addPhysicalModel(string identifier, string visModId, vec3 position, bool static_model)
 {
   shared_ptr<PhysicalModel> phModel(new PhysicalModel(visual_models[visModId], position, static_model));
   physical_models[identifier] = phModel;
+  phModelNames.push_back(identifier);
 }
 
-shared_ptr<PhysicalModel> App::getPhysicalModel(string physModId) {
+shared_ptr<PhysicalModel> App::getPhysicalModel(string physModId)
+{
   return physical_models[physModId];
+}
+
+shared_ptr<VisualModel> App::getVisualModel(string visModId)
+{
+  return visual_models[visModId];
+}
+
+const vector<string>& App::getShaderNames()
+{
+  return shaderNames;
+}
+
+const vector<string>& App::getVisModelNames()
+{
+  return visModelNames;
+}
+
+const vector<string>& App::getPhModelNames()
+{
+  return phModelNames;
 }

@@ -4,7 +4,7 @@ project( HelloGL )
 set(
   TARGETS
     src/main.cpp src/gameWindow.cpp src/physicalModel.cpp src/glErrChecks.cpp src/shader.cpp
-    src/visualModel.cpp src/app.cpp
+    src/visualModel.cpp src/app.cpp src/controls.cpp
 )
 
 include_directories(libs/imgui/include)

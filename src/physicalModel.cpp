@@ -6,7 +6,8 @@ using std::endl;
 
 PhysicalModel::PhysicalModel(shared_ptr<VisualModel> model, vec3 position, bool falling)
   : visualModel(model), position(position), moveSpeed(0.0f), fallSpeed(0.0f), jumpSpeed(0.0f),
-    pitch(0.0f), yaw(0.0f), roll(0.0f), scale(1.0f), targetSpeed(0.0f), falling(falling)
+    pitch(0.0f), yaw(0.0f), roll(0.0f), scale(1.0f), targetSpeed(0.0f), falling(falling),
+    width(1.0f), height(1.0f), depth(1.0f)
 {
 
 }

@@ -29,7 +29,6 @@ void GameWindow::createWindow(int width, int height)
   // std::cout << "GL_MAX_VERTEX_ATTRIBS " << maxVertAttrs << std::endl;
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO(); (void)io;
   ImGui::StyleColorsDark();
   ImGui_ImplSDL2_InitForOpenGL(window, context);
   ImGui_ImplOpenGL3_Init("#version 100");

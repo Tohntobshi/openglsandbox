@@ -9,9 +9,8 @@ using std::shared_ptr;
 using glm::vec3;
 using glm::mat4;
 
-class PhysicalWorld;
-class ModelManager;
 class App;
+class Controls;
 
 class PhysicalModel {
 private:
@@ -24,6 +23,7 @@ private:
   float targetSpeed;
   float width;
   float height;
+  float depth;
   float pitch;
   float yaw;
   float roll;
@@ -35,7 +35,6 @@ public:
   void move(vec3 direction);
   void move();
   void jump(float speed);
-friend PhysicalWorld;
-friend ModelManager;
 friend App;
+friend Controls;
 };

@@ -4,11 +4,13 @@
 #include "physicalModel.h"
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 using std::shared_ptr;
 using std::unordered_map;
 using std::string;
 using glm::vec3;
+using std::vector;
 
 enum CameraMode {
   THIRD_PERSON,
@@ -25,8 +27,12 @@ private:
   vec3 camera_position;
   vec3 light_position;
   CameraMode camera_mode;
+  vector<string> shaderNames;
+  vector<string> visModelNames;
+  vector<string> phModelNames;
 public:
   shared_ptr<PhysicalModel> getPhysicalModel(string physModId);
+  shared_ptr<VisualModel> getVisualModel(string visModId);
   App();
   void addShader(string identifier, string shaderpath);
   void addVisualModel(string identifier, string shaderId, string modelpath, string texturepath);
@@ -40,4 +46,7 @@ public:
   void rotateCameraBy(float hor, float vert);
   void changeCameraMode(CameraMode mode);
   void update();
+  const vector<string>& getShaderNames();
+  const vector<string>& getVisModelNames();
+  const vector<string>& getPhModelNames();
 };
