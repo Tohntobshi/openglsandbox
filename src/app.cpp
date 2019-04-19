@@ -3,6 +3,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <fstream>
+#include <stdexcept>
+
+using std::cout;
+using std::ifstream;
+using std::ofstream;
+using std::runtime_error;
 
 App::App() : camera_vertical_rotation(0.0f),
              camera_horizontal_rotation(0.0f),
@@ -171,28 +179,79 @@ void App::changeCameraMode(CameraMode mode)
 
 void App::addShader(string identifier, string shaderpath)
 {
-  shared_ptr<Shader> shader(new Shader(shaderpath));
+  if (shaders.find(identifier) != shaders.end())
+  {
+    throw runtime_error("identifier " + identifier + " already exists");
+  }
+  shared_ptr<Shader> shader(new Shader(shaderpath, identifier));
   shaders[identifier] = shader;
   shaderNames.push_back(identifier);
 }
 
-void App::addVisualModel(string identifier, string shaderId, string modelpath)
+void App::addVisualModel(
+    string identifier,
+    string shaderId,
+    string modelpath,
+    string texturepath)
 {
-  shared_ptr<VisualModel> visModel(new VisualModel(shaders[shaderId], modelpath));
-  visual_models[identifier] = visModel;
+  if (visual_models.find(identifier) != visual_models.end())
+  {
+    throw runtime_error("identifier " + identifier + " already exists");
+  }
+  if (texturepath != "")
+  {
+    shared_ptr<VisualModel> visModel(new VisualModel(
+        shaders[shaderId],
+        shaderId,
+        modelpath,
+        identifier,
+        texturepath));
+    visual_models[identifier] = visModel;
+  }
+  else
+  {
+    shared_ptr<VisualModel> visModel(new VisualModel(
+        shaders[shaderId],
+        shaderId,
+        modelpath,
+        identifier));
+    visual_models[identifier] = visModel;
+  }
   visModelNames.push_back(identifier);
 }
 
-void App::addVisualModel(string identifier, string shaderId, string modelpath, string texturepath)
+void App::addPhysicalModel(
+    string identifier,
+    string visModId,
+    vec3 position,
+    bool falling,
+    bool collidable,
+    float width,
+    float height,
+    float depth,
+    float pitch,
+    float yaw,
+    float roll,
+    float scale)
 {
-  shared_ptr<VisualModel> visModel(new VisualModel(shaders[shaderId], modelpath, texturepath));
-  visual_models[identifier] = visModel;
-  visModelNames.push_back(identifier);
-}
-
-void App::addPhysicalModel(string identifier, string visModId, vec3 position, bool static_model)
-{
-  shared_ptr<PhysicalModel> phModel(new PhysicalModel(visual_models[visModId], position, static_model));
+  if (physical_models.find(identifier) != physical_models.end())
+  {
+    throw runtime_error("identifier " + identifier + " already exists");
+  }
+  shared_ptr<PhysicalModel> phModel(new PhysicalModel(
+      visual_models[visModId],
+      visModId,
+      identifier,
+      position,
+      falling,
+      collidable,
+      width,
+      height,
+      depth,
+      pitch,
+      yaw,
+      roll,
+      scale));
   physical_models[identifier] = phModel;
   phModelNames.push_back(identifier);
 }
@@ -207,17 +266,124 @@ shared_ptr<VisualModel> App::getVisualModel(string visModId)
   return visual_models[visModId];
 }
 
-const vector<string>& App::getShaderNames()
+const vector<string> &App::getShaderNames()
 {
   return shaderNames;
 }
 
-const vector<string>& App::getVisModelNames()
+const vector<string> &App::getVisModelNames()
 {
   return visModelNames;
 }
 
-const vector<string>& App::getPhModelNames()
+const vector<string> &App::getPhModelNames()
 {
   return phModelNames;
+}
+
+void App::saveConfiguration(string filename)
+{
+  ofstream file(filename);
+  if (!file.is_open())
+  {
+    throw runtime_error("cannot open file for writing");
+  }
+  for (auto &shader : shaders)
+  {
+    auto &sh = shader.second;
+    file << "sh " << sh->identifier << " " << sh->filepath << "\n";
+  }
+  for (auto &vmodel : visual_models)
+  {
+    auto &vm = vmodel.second;
+    file << "vm " << vm->identifier << " " << vm->shaderId << " " << vm->filepath << " " << vm->texpath << "\n";
+  }
+  for (auto &phmodel : physical_models)
+  {
+    auto &pm = phmodel.second;
+    file << "pm " << pm->identifier << " " << pm->visModId << " "
+         << pm->position.x << " " << pm->position.y << " " << pm->position.z << " "
+         << pm->falling << " " << pm->collidable << " "
+         << pm->width << " " << pm->height << " " << pm->depth << " "
+         << pm->pitch << " " << pm->yaw << " " << pm->roll << " "
+         << pm->scale << "\n";
+  }
+  file.close();
+}
+
+void App::loadConfiguration(string filepath)
+{
+  ifstream file(filepath);
+  if (!file.is_open())
+  {
+    throw runtime_error("Cannot open file " + filepath);
+  }
+  while (file)
+  {
+    string line;
+    getline(file, line);
+    if (line.substr(0, 3) == "sh ")
+    {
+      char identifier[128] = "";
+      char filename[128] = "";
+      if (sscanf(line.c_str(), "sh %127s %127s\n", identifier, filename) != 2)
+      {
+        file.close();
+        throw runtime_error("Cannot read file " + filepath);
+      }
+      try
+      {
+        addShader(identifier, filename);
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
+    }
+    else if (line.substr(0, 3) == "vm ")
+    {
+      char identifier[128] = "";
+      char shadername[128] = "";
+      char filename[128] = "";
+      char texname[128] = "";
+      if (sscanf(line.c_str(), "vm %127s %127s %127s %127s\n", identifier, shadername, filename, texname) < 3)
+      {
+        file.close();
+        throw runtime_error("Cannot read file " + filepath);
+      }
+      try
+      {
+        addVisualModel(identifier, shadername, filename, texname);
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
+    }
+    else if (line.substr(0, 3) == "pm ")
+    {
+      char identifier[128] = "";
+      char vismodname[128] = "";
+      float x, y, z;
+      bool falling, collidable;
+      float width, height, depth;
+      float pitch, yaw, roll, scale;
+      if (sscanf(line.c_str(), "pm %127s %127s %f %f %f %i %i %f %f %f %f %f %f %f\n", identifier, vismodname,
+                 &x, &y, &z, &falling, &collidable, &width, &height, &depth, &pitch, &yaw, &roll, &scale) != 14)
+      {
+        file.close();
+        throw runtime_error("Cannot read file " + filepath);
+      }
+      try
+      {
+        addPhysicalModel(identifier, vismodname, {x, y, z}, falling, collidable, width, height, depth,
+          pitch, yaw, roll, scale);
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
+    }
+  }
+  file.close();
 }

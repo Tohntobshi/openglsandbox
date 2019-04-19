@@ -36,8 +36,20 @@ public:
   App();
   void addShader(string identifier, string shaderpath);
   void addVisualModel(string identifier, string shaderId, string modelpath, string texturepath);
-  void addVisualModel(string identifier, string shaderId, string modelpath);
-  void addPhysicalModel(string identifier, string visModId, vec3 position, bool static_model);
+  void addPhysicalModel(
+    string identifier,
+    string visModId,
+    vec3 position,
+    bool falling,
+    bool collidable,
+    float width = 1.0f,
+    float height = 1.0f,
+    float depth = 1.0f,
+    float pitch = 0.0f,
+    float yaw = 0.0f,
+    float roll = 0.0f,
+    float scale = 0.0f
+  );
   void moveCameraStraight(float amount);
   void moveCameraSideways(float amount);
   void moveCameraTo(const vec3& position);
@@ -49,4 +61,6 @@ public:
   const vector<string>& getShaderNames();
   const vector<string>& getVisModelNames();
   const vector<string>& getPhModelNames();
+  void saveConfiguration(string filename);
+  void loadConfiguration(string filename);
 };

@@ -23,6 +23,7 @@ private:
   bool kpressed = false;
   bool jpressed = false;
   bool fallCheckbox = false;
+  bool collidableCheckbox = false;
   bool showActiveModelHitbox = true;
   char shaderPath[128] = "";
   char shaderName[128] = "";
@@ -33,6 +34,7 @@ private:
   char choosenModel[128] = "";
   char phModelName[128] = "";
   char choosenPhModel[128] = "";
+  char worldPath[128] = "";
   App& app;
   ImGuiIO& io;
   shared_ptr<PhysicalModel> activeModel;

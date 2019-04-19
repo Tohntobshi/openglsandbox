@@ -29,9 +29,26 @@ private:
   float roll;
   float scale;
   bool falling;
+  bool collidable;
   void update(vec3 movement, bool dontMove, bool dontFall, bool dontJump);
 public:
-  PhysicalModel(shared_ptr<VisualModel>, vec3 position, bool falling);
+  PhysicalModel(
+    shared_ptr<VisualModel> model,
+    string visModId,
+    string identifier,
+    vec3 position,
+    bool falling,
+    bool collidable,
+    float width,
+    float height,
+    float depth,
+    float pitch,
+    float yaw,
+    float roll,
+    float scale
+  );
+  string visModId;
+  string identifier;
   void move(vec3 direction);
   void move();
   void jump(float speed);

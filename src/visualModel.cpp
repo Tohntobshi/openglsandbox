@@ -7,19 +7,28 @@
 #include <vector>
 #include <stb_image.h>
 #include <list>
+#include <stdexcept>
 
 using std::list;
 using std::ifstream;
 using std::cout;
-using std::endl;
 using std::vector;
+using std::runtime_error;
 
 void clearGlErrors();
 void checkGLErrors();
 
 
-VisualModel::VisualModel(shared_ptr<Shader> shader, string filepath)
-  : shader(shader)
+VisualModel::VisualModel(
+  shared_ptr<Shader> shader,
+  string shaderId,
+  string filepath,
+  string identifier
+):
+  shader(shader),
+  shaderId(shaderId),
+  filepath(filepath),
+  identifier(identifier)
 {
   list<glm::vec3> verticesList;
   list<unsigned int> vertexElementsList;
@@ -29,8 +38,7 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string filepath)
   ifstream file(filepath);
   if (!file.is_open())
   {
-    cout << "Cannot open file " << filepath << endl;
-    exit(1);
+    throw runtime_error("Cannot open file " + filepath);
   }
   while(file)
   {
@@ -44,8 +52,8 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string filepath)
       float z;
       if (sscanf(line.c_str(), "v %f %f %f\n", &x, &y, &z) != 3)
       {
-        cout << "Cannot read file " << filepath << endl;
-        exit(1);
+        file.close();
+        throw runtime_error("Cannot read file " + filepath);
       }
       verticesList.push_back({ x, y, z });
     }
@@ -56,8 +64,8 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string filepath)
       float z;
       if (sscanf(line.c_str(), "vn %f %f %f\n", &x, &y, &z) != 3)
       {
-        cout << "Cannot read file " << filepath << endl;
-        exit(1);
+        file.close();
+        throw runtime_error("Cannot read file " + filepath);
       }
       normalsList.push_back({ x, y, z });
     }
@@ -67,8 +75,8 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string filepath)
       unsigned int vel1, vel2, vel3, nel1, nel2, nel3;
       if (sscanf(line.c_str(), "f %d//%d %d//%d %d//%d\n", &vel1, &nel1, &vel2, &nel2, &vel3, &nel3) != 6)
       {
-        cout << "Cannot read file " << filepath << endl;
-        exit(1);
+        file.close();
+        throw runtime_error("Cannot read file " + filepath);
       }
       vertexElementsList.push_back(vel1 - 1);
       vertexElementsList.push_back(vel2 - 1);
@@ -103,8 +111,19 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string filepath)
   delete[] data;
 }
 
-VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpath)
-  : shader(shader), textured(true)
+VisualModel::VisualModel(
+  shared_ptr<Shader> shader,
+  string shaderId,
+  string objpath,
+  string identifier,
+  string texpath
+):
+  shader(shader),
+  shaderId(shaderId),
+  textured(true),
+  filepath(objpath),
+  identifier(identifier),
+  texpath(texpath)
 {
   list<glm::vec3> verticesList;
   list<unsigned int> vertexElementsList;
@@ -116,8 +135,7 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpa
   ifstream file(objpath);
   if (!file.is_open())
   {
-    cout << "Cannot open file " << objpath << endl;
-    exit(1);
+    throw runtime_error("Cannot open file " + objpath);
   }
   while(file)
   {
@@ -131,8 +149,8 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpa
       float z;
       if (sscanf(line.c_str(), "v %f %f %f\n", &x, &y, &z) != 3)
       {
-        cout << "Cannot read file " << objpath << endl;
-        exit(1);
+        file.close();
+        throw runtime_error("Cannot read file " + objpath);
       }
       verticesList.push_back({ x, y, z });
     }
@@ -142,8 +160,8 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpa
       float y;
       if (sscanf(line.c_str(), "vt %f %f\n", &x, &y) != 2)
       {
-        cout << "Cannot read file " << objpath << endl;
-        exit(1);
+        file.close();
+        throw runtime_error("Cannot read file " + objpath);
       }
       texcoordsList.push_back({ x, y });
     }
@@ -154,8 +172,8 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpa
       float z;
       if (sscanf(line.c_str(), "vn %f %f %f\n", &x, &y, &z) != 3)
       {
-        cout << "Cannot read file " << objpath << endl;
-        exit(1);
+        file.close();
+        throw runtime_error("Cannot read file " + objpath);
       }
       normalsList.push_back({ x, y, z });
     }
@@ -165,8 +183,8 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpa
       unsigned int vel1, vel2, vel3, nel1, nel2, nel3, tel1, tel2, tel3;
       if (sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d\n", &vel1, &tel1, &nel1, &vel2, &tel2, &nel2, &vel3, &tel3, &nel3) != 9)
       {
-        cout << "Cannot read file " << objpath << endl;
-        exit(1);
+        file.close();
+        throw runtime_error("Cannot read file " + objpath);
       }
       vertexElementsList.push_back(vel1 - 1);
       vertexElementsList.push_back(vel2 - 1);
@@ -220,8 +238,9 @@ VisualModel::VisualModel(shared_ptr<Shader> shader, string objpath, string texpa
   unsigned char* image = stbi_load(texpath.c_str(), &width, &height, &nrCh, 4);
   if (!image)
   {
-    cout << "Cannot read file " << texpath << endl;
-    exit(1);
+    file.close();
+    glDeleteBuffers(1, &vbo);
+    throw runtime_error("Cannot read file " + texpath);
   }
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
   stbi_image_free(image);  

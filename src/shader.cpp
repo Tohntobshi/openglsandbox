@@ -2,20 +2,21 @@
 #include <SDL2/SDL_opengles2.h>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 
 using std::ifstream;
 using std::cout;
-using std::endl;
+using std::runtime_error;
 
 
 void checkGLErrors();
 
-Shader::Shader(string filepath)
+Shader::Shader(string filepath, string identifier):
+  filepath(filepath), identifier(identifier)
 {
   ifstream file(filepath);
   if (!file.is_open()) {
-    cout << "Cannot open file " << filepath << endl;
-    exit(1);
+    throw runtime_error("Cannot open file " + filepath);
   }
   string vertexSource;
   string fragmentSource;

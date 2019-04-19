@@ -18,8 +18,23 @@ private:
   unsigned int facesCount;
   bool textured;
 public:
-  VisualModel(shared_ptr<Shader> shader, std::string filepath);
-  VisualModel(shared_ptr<Shader> shader, std::string objpath, std::string texpath);
+  string shaderId;
+  string filepath;
+  string identifier;
+  string texpath;
+  VisualModel(
+    shared_ptr<Shader> shader,
+    string shaderId,
+    string filepath,
+    string identifier
+  );
+  VisualModel(
+    shared_ptr<Shader> shader,
+    string shaderId,
+    string objpath,
+    string identifier,
+    string texpath
+  );
   ~VisualModel();
   void draw(float* viewMatrix);
   void bind();

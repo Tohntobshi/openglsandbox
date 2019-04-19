@@ -7,15 +7,17 @@ using std::unordered_map;
 
 class Shader
 {
-  private:
+private:
   unsigned int vertexShader;
   unsigned int fragmentShader;
   unsigned int shaderProgram;
   unordered_map<string, unsigned int> attributes;
   unordered_map<string, int> uniforms;
-  public:
+public:
+  string filepath;
+  string identifier;
+  Shader(string filepath, string identifier);
   int getShaderId();
-  Shader(string filepath);
   unsigned int getAttributeLocation(string attr);
   int getUniformLocation(string uni);
   void use();

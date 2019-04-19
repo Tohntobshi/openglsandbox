@@ -3,7 +3,7 @@
 Controls::Controls(App &app) : app(app), io(ImGui::GetIO())
 {
   app.addShader("strange", "../assets/strange.glsl");
-  app.addVisualModel("cube", "strange", "../assets/cube.obj");
+  app.addVisualModel("cube", "strange", "../assets/cube.obj", "");
   hitboxModel = app.getVisualModel("cube");
 }
 
@@ -184,14 +184,7 @@ void Controls::update()
   ImGui::InputText("model name", modelName, sizeof(char) * 128);
   if (ImGui::Button("Add"))
   {
-    if (strcmp(texPath, "") == 0)
-    {
-      app.addVisualModel(modelName, choosenShader, modelPath);
-    }
-    else
-    {
-      app.addVisualModel(modelName, choosenShader, modelPath, texPath);
-    }
+    app.addVisualModel(modelName, choosenShader, modelPath, texPath);
   }
   ImGui::End();
   // physical model window
@@ -210,9 +203,10 @@ void Controls::update()
   }
   ImGui::InputText("ph model name", phModelName, sizeof(char) * 128);
   ImGui::Checkbox("falling", &fallCheckbox);
+  ImGui::Checkbox("collidable", &collidableCheckbox);
   if (ImGui::Button("Add"))
   {
-    app.addPhysicalModel(phModelName, choosenModel, vec3(0.0f), fallCheckbox);
+    app.addPhysicalModel(phModelName, choosenModel, vec3(0.0f), fallCheckbox, collidableCheckbox);
   }
   ImGui::End();
   // choose active model
@@ -249,4 +243,16 @@ void Controls::update()
     ImGui::SliderFloat("depth", &(activeModel->depth), 0.1f, 10.0f);
     ImGui::End();
   }
+  // save/load
+  ImGui::Begin("Save/load world");
+  ImGui::InputText("file", worldPath, sizeof(char) * 128);
+  if (ImGui::Button("Save"))
+  {
+    app.saveConfiguration(worldPath);
+  }
+  if (ImGui::Button("Load"))
+  {
+    app.loadConfiguration(worldPath);
+  }
+  ImGui::End();
 }
