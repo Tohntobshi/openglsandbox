@@ -31,6 +31,6 @@ void main()
   vec3 lookDir = normalize(fragPos - camPos);
   float diffused = -0.5 * (dot(vasheNorm, lightDir) - 1.0);
   vec3 color = vec3(gl_FragCoord.x/640.0, gl_FragCoord.y/480.0, 1.0);
-  gl_FragColor = vec4(color, 1.0) * diffused;
+  gl_FragColor = vec4(color * diffused, 1.0);
 }
 #blockend

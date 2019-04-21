@@ -13,8 +13,8 @@ using glm::vec3;
 using std::vector;
 
 enum CameraMode {
-  THIRD_PERSON,
   FIRST_PERSON,
+  THIRD_PERSON,
 };
 
 class App {
@@ -30,6 +30,8 @@ private:
   vector<string> shaderNames;
   vector<string> visModelNames;
   vector<string> phModelNames;
+  void updateCamera();
+  void updatePhModels();
 public:
   shared_ptr<PhysicalModel> getPhysicalModel(string physModId);
   shared_ptr<VisualModel> getVisualModel(string visModId);
@@ -48,7 +50,7 @@ public:
     float pitch = 0.0f,
     float yaw = 0.0f,
     float roll = 0.0f,
-    float scale = 0.0f
+    float scale = 1.0f
   );
   void moveCameraStraight(float amount);
   void moveCameraSideways(float amount);

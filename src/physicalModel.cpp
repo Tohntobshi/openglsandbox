@@ -36,18 +36,8 @@ PhysicalModel::PhysicalModel(
 {
 }
 
-void PhysicalModel::update(vec3 newPosition, bool stopMove, bool stopFall, bool stopJump)
+void PhysicalModel::draw()
 {
-  position = newPosition;
-
-  jumpSpeed = glm::max(jumpSpeed - 0.1f, 0.0f);
-  if (moveSpeed < targetSpeed) { moveSpeed += 0.1f; }
-  else
-  {
-    targetSpeed = 0.0f;
-    moveSpeed = glm::max(moveSpeed - 0.1f, 0.0f);
-  }
-  if (falling) { fallSpeed += 0.01f; }
   mat4 model = glm::mat4(1.0f);
   model = glm::translate(model, position);
   model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -56,14 +46,6 @@ void PhysicalModel::update(vec3 newPosition, bool stopMove, bool stopFall, bool 
   model = glm::scale(model, glm::vec3(scale));
   visualModel->bind();
   visualModel->draw(glm::value_ptr(model));
-
-  if (stopMove)
-  {
-    targetSpeed = 0.0f;
-    moveSpeed = 0.0f;
-  }
-  if (stopFall) { fallSpeed = 0.0f; }
-  if (stopJump) { jumpSpeed = 0.0f; }
 }
 
 void PhysicalModel::move()

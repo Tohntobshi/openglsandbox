@@ -5,16 +5,38 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-using std::shared_ptr;
-using glm::vec3;
 using glm::mat4;
+using glm::vec3;
+using std::shared_ptr;
 
 class App;
 class Controls;
 
-class PhysicalModel {
+class PhysicalModel
+{
 private:
   shared_ptr<VisualModel> visualModel;
+public:
+  PhysicalModel(
+      shared_ptr<VisualModel> model,
+      string visModId,
+      string identifier,
+      vec3 position,
+      bool falling,
+      bool collidable,
+      float width,
+      float height,
+      float depth,
+      float pitch,
+      float yaw,
+      float roll,
+      float scale);
+  string visModId;
+  string identifier;
+  void draw();
+  void move(vec3 direction);
+  void move();
+  void jump(float speed);
   vec3 position;
   vec3 direction;
   float fallSpeed;
@@ -30,28 +52,6 @@ private:
   float scale;
   bool falling;
   bool collidable;
-  void update(vec3 movement, bool dontMove, bool dontFall, bool dontJump);
-public:
-  PhysicalModel(
-    shared_ptr<VisualModel> model,
-    string visModId,
-    string identifier,
-    vec3 position,
-    bool falling,
-    bool collidable,
-    float width,
-    float height,
-    float depth,
-    float pitch,
-    float yaw,
-    float roll,
-    float scale
-  );
-  string visModId;
-  string identifier;
-  void move(vec3 direction);
-  void move();
-  void jump(float speed);
-friend App;
-friend Controls;
+  friend App;
+  friend Controls;
 };

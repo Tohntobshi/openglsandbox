@@ -7,6 +7,8 @@
 #include <fstream>
 #include <stdexcept>
 
+using glm::mat4;
+using glm::vec3;
 using std::cout;
 using std::ifstream;
 using std::ofstream;
@@ -18,13 +20,12 @@ App::App() : camera_vertical_rotation(0.0f),
 {
 }
 
-void App::update()
+void App::updateCamera()
 {
-  // camera update
-  glm::vec3 camPosition;
-  glm::vec3 camTarget;
-  glm::vec3 camDirection;
-  glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+  vec3 camPosition;
+  vec3 camTarget;
+  vec3 camDirection;
+  vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
   camDirection.x = sin(glm::radians(camera_horizontal_rotation)) * cos(glm::radians(camera_vertical_rotation));
   camDirection.y = sin(glm::radians(camera_vertical_rotation));
   camDirection.z = cos(glm::radians(camera_horizontal_rotation)) * cos(glm::radians(camera_vertical_rotation));
@@ -39,8 +40,8 @@ void App::update()
     camTarget = camera_position;
     camPosition = camTarget + (camDirection * 10.0f);
   }
-  glm::mat4 viewMatrix = glm::lookAt(camPosition, camTarget, camUp);
-  glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+  mat4 viewMatrix = glm::lookAt(camPosition, camTarget, camUp);
+  mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
   for (auto &shader : shaders)
   {
     shader.second->use();
@@ -49,7 +50,9 @@ void App::update()
     glUniform3fv(shader.second->getUniformLocation("ligtPos"), 1, glm::value_ptr(light_position));
     glUniform3fv(shader.second->getUniformLocation("camPos"), 1, glm::value_ptr(camPosition));
   }
-  // checking collisions and updating models
+}
+void App::updatePhModels()
+{
   for (auto pair : physical_models)
   {
     auto &model = pair.second;
@@ -59,72 +62,117 @@ void App::update()
     vec3 move = model->direction * model->moveSpeed;
     vec3 movement = fall + jump + move;
     vec3 newPosition = position + movement;
-    float left_x = position.x - 1.5f;
-    float right_x = position.x + 1.5f;
-    float front_z = position.z - 1.5f;
-    float back_z = position.z + 1.5f;
-    float bottom_y = position.y - 1.5f;
-    float top_y = position.y + 1.5f;
-    float next_left_x = newPosition.x - 1.5f;
-    float next_right_x = newPosition.x + 1.5f;
-    float next_front_z = newPosition.z - 1.5f;
-    float next_back_z = newPosition.z + 1.5f;
-    float next_bottom_y = newPosition.y - 1.5f;
-    float next_top_y = newPosition.y + 1.5f;
-    bool stopFall = false;
-    bool stopJump = false;
-    bool stopMove = false;
-    for (auto pair2 : physical_models)
+    // speed update ------------------------------------------------
+    model->jumpSpeed = glm::max(model->jumpSpeed - 0.1f, 0.0f);
+    if (model->moveSpeed < model->targetSpeed)
     {
-      auto &modelToCompare = pair2.second;
-      if (model == modelToCompare)
+      model->moveSpeed += 0.1f;
+    }
+    else
+    {
+      model->targetSpeed = 0.0f;
+      model->moveSpeed = glm::max(model->moveSpeed - 0.1f, 0.0f);
+    }
+    if (model->falling)
+    {
+      model->fallSpeed += 0.01f;
+    }
+    else
+    {
+      model->fallSpeed = 0.0f;
+    }
+    // =============================================================
+    if (model->collidable)
+    {
+      // collision detection
+      float mod_half_width = model->width / 2.0f;
+      float mod_half_height = model->height / 2.0f;
+      float mod_half_depth = model->depth / 2.0f;
+
+      float left_x = position.x - mod_half_width;
+      float right_x = position.x + mod_half_width;
+      float front_z = position.z - mod_half_depth;
+      float back_z = position.z + mod_half_depth;
+      float bottom_y = position.y - mod_half_height;
+      float top_y = position.y + mod_half_height;
+      float next_left_x = newPosition.x - mod_half_width;
+      float next_right_x = newPosition.x + mod_half_width;
+      float next_front_z = newPosition.z - mod_half_depth;
+      float next_back_z = newPosition.z + mod_half_depth;
+      float next_bottom_y = newPosition.y - mod_half_height;
+      float next_top_y = newPosition.y + mod_half_height;
+      bool stopFall = false;
+      bool stopJump = false;
+      bool stopMove = false;
+      for (auto pair2 : physical_models)
       {
-        continue;
+        auto &comparedModel = pair2.second;
+        if (model == comparedModel || !comparedModel->collidable)
+        {
+          continue;
+        }
+        float cmp_mod_half_width = comparedModel->width / 2.0f;
+        float cmp_mod_half_height = comparedModel->height / 2.0f;
+        float cmp_mod_half_depth = comparedModel->depth / 2.0f;
+
+        vec3 &comparedPosition = comparedModel->position;
+        float cmpLeftX = comparedPosition.x - cmp_mod_half_width;
+        float cmpRightX = comparedPosition.x + cmp_mod_half_width;
+        float cmpFrontZ = comparedPosition.z - cmp_mod_half_depth;
+        float cmpBackZ = comparedPosition.z + cmp_mod_half_depth;
+        float cmpBottomY = comparedPosition.y - cmp_mod_half_height;
+        float cmpTopY = comparedPosition.y + cmp_mod_half_height;
+        if (
+            (next_left_x <= cmpRightX && next_left_x >= cmpLeftX || next_right_x >= cmpLeftX && next_right_x <= cmpRightX) // x collision
+            &&
+            (next_top_y >= cmpBottomY && next_top_y <= cmpTopY || next_bottom_y <= cmpTopY && next_bottom_y >= cmpBottomY) // y collision
+            &&
+            (next_front_z <= cmpBackZ && next_front_z >= cmpFrontZ || next_back_z >= cmpFrontZ && next_back_z <= cmpBackZ) // z collision
+        )
+        {
+          if (bottom_y > cmpTopY)
+          {
+            stopFall = true;
+            model->fallSpeed = 0.0f;
+          }
+          else if (top_y < cmpBottomY)
+          {
+            stopJump = true;
+            model->jumpSpeed = 0.0f;
+          }
+          else
+          {
+            stopMove = true;
+            model->moveSpeed = 0.0f;
+            model->targetSpeed = 0.0f;
+          }
+        }
       }
-      vec3 &comparedPosition = modelToCompare->position;
-      float cmpLeftX = comparedPosition.x - 1.5f;
-      float cmpRightX = comparedPosition.x + 1.5f;
-      float cmpFrontZ = comparedPosition.z - 1.5f;
-      float cmpBackZ = comparedPosition.z + 1.5f;
-      float cmpBottomY = comparedPosition.y - 1.5f;
-      float cmpTopY = comparedPosition.y + 1.5f;
-      if (
-          (next_left_x <= cmpRightX && next_left_x >= cmpLeftX || next_right_x >= cmpLeftX && next_right_x <= cmpRightX) // x collision
-          &&
-          (next_top_y >= cmpBottomY && next_top_y <= cmpTopY || next_bottom_y <= cmpTopY && next_bottom_y >= cmpBottomY) // y collision
-          &&
-          (next_front_z <= cmpBackZ && next_front_z >= cmpFrontZ || next_back_z >= cmpFrontZ && next_back_z <= cmpBackZ) // z collision
-      )
+      if (!stopFall)
       {
-        if (bottom_y > cmpTopY)
-        {
-          stopFall = true;
-        }
-        else if (top_y < cmpBottomY)
-        {
-          stopJump = true;
-        }
-        else
-        {
-          stopMove = true;
-        }
+        model->position += fall;
+      }
+      if (!stopJump)
+      {
+        model->position += jump;
+      }
+      if (!stopMove)
+      {
+        model->position += move;
       }
     }
-    newPosition = position;
-    if (!stopFall)
+    else
     {
-      newPosition += fall;
+      model->position = newPosition;
     }
-    if (!stopJump)
-    {
-      newPosition += jump;
-    }
-    if (!stopMove)
-    {
-      newPosition += move;
-    }
-    model->update(newPosition, stopMove, stopFall, stopJump);
+    model->draw();
   }
+}
+
+void App::update()
+{
+  updateCamera();
+  updatePhModels();
 }
 
 void App::moveCameraStraight(float amount)
@@ -377,7 +425,7 @@ void App::loadConfiguration(string filepath)
       try
       {
         addPhysicalModel(identifier, vismodname, {x, y, z}, falling, collidable, width, height, depth,
-          pitch, yaw, roll, scale);
+                         pitch, yaw, roll, scale);
       }
       catch (runtime_error &e)
       {

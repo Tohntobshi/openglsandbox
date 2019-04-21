@@ -1,4 +1,7 @@
 #include "controls.h"
+#include <iostream>
+
+using std::cout;
 
 Controls::Controls(App &app) : app(app), io(ImGui::GetIO())
 {
@@ -157,102 +160,114 @@ void Controls::update()
   const vector<string> &visModelNames = app.getVisModelNames();
   const vector<string> &phModelNames = app.getPhModelNames();
   // shader window
-  ImGui::Begin("Add shader!");
-  ImGui::InputText("shader path", shaderPath, sizeof(char) * 128);
-  ImGui::InputText("shader name", shaderName, sizeof(char) * 128);
-  if (ImGui::Button("Add"))
+  ImGui::Begin("Controls");
+  if (ImGui::CollapsingHeader("Add shader"))
   {
-    app.addShader(shaderName, shaderPath);
+    ImGui::InputText("shader path", shaderPath, sizeof(char) * 128);
+    ImGui::InputText("shader name", shaderName, sizeof(char) * 128);
+    if (ImGui::Button("Add shader!"))
+    {
+      app.addShader(shaderName, shaderPath);
+    }
   }
-  ImGui::End();
   // visual model window
-  ImGui::Begin("Add visual model");
-  if (ImGui::BeginCombo("shader", choosenShader)) // The second parameter is the label previewed before opening the combo.
+  if (ImGui::CollapsingHeader("Add visual model"))
   {
-    for (const string& name: shaderNames)
+    if (ImGui::BeginCombo("shader", choosenShader))
     {
-      bool is_selected = (name == choosenShader);
-      if (ImGui::Selectable(name.c_str(), is_selected))
-        strcpy(choosenShader, name.c_str());
-      if (is_selected)
-        ImGui::SetItemDefaultFocus(); // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+      for (const string &name : shaderNames)
+      {
+        bool is_selected = (name == choosenShader);
+        if (ImGui::Selectable(name.c_str(), is_selected))
+          strcpy(choosenShader, name.c_str());
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
     }
-    ImGui::EndCombo();
+    ImGui::InputText("model path", modelPath, sizeof(char) * 128);
+    ImGui::InputText("texture path", texPath, sizeof(char) * 128);
+    ImGui::InputText("model name", modelName, sizeof(char) * 128);
+    if (ImGui::Button("Add visual model!"))
+    {
+      app.addVisualModel(modelName, choosenShader, modelPath, texPath);
+    }
   }
-  ImGui::InputText("model path", modelPath, sizeof(char) * 128);
-  ImGui::InputText("texture path", texPath, sizeof(char) * 128);
-  ImGui::InputText("model name", modelName, sizeof(char) * 128);
-  if (ImGui::Button("Add"))
-  {
-    app.addVisualModel(modelName, choosenShader, modelPath, texPath);
-  }
-  ImGui::End();
+
   // physical model window
-  ImGui::Begin("Add physical model");
-  if (ImGui::BeginCombo("vis model", choosenModel)) // The second parameter is the label previewed before opening the combo.
+  if (ImGui::CollapsingHeader("Add physical model"))
   {
-    for (const string& name: visModelNames)
+    if (ImGui::BeginCombo("vis model", choosenModel))
     {
-      bool is_selected = (name == choosenModel);
-      if (ImGui::Selectable(name.c_str(), is_selected))
-        strcpy(choosenModel, name.c_str());
-      if (is_selected)
-        ImGui::SetItemDefaultFocus(); // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+      for (const string &name : visModelNames)
+      {
+        bool is_selected = (name == choosenModel);
+        if (ImGui::Selectable(name.c_str(), is_selected))
+          strcpy(choosenModel, name.c_str());
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
     }
-    ImGui::EndCombo();
+    ImGui::InputText("ph model name", phModelName, sizeof(char) * 128);
+    ImGui::Checkbox("falling", &fallCheckbox);
+    ImGui::Checkbox("collidable", &collidableCheckbox);
+    if (ImGui::Button("Add physical model!"))
+    {
+      app.addPhysicalModel(phModelName, choosenModel, vec3(0.0f), fallCheckbox, collidableCheckbox);
+    }
   }
-  ImGui::InputText("ph model name", phModelName, sizeof(char) * 128);
-  ImGui::Checkbox("falling", &fallCheckbox);
-  ImGui::Checkbox("collidable", &collidableCheckbox);
-  if (ImGui::Button("Add"))
-  {
-    app.addPhysicalModel(phModelName, choosenModel, vec3(0.0f), fallCheckbox, collidableCheckbox);
-  }
-  ImGui::End();
   // choose active model
-  ImGui::Begin("Choose active model");
-  if (ImGui::BeginCombo("model", choosenPhModel)) // The second parameter is the label previewed before opening the combo.
+  if (ImGui::CollapsingHeader("Choose and configure active model"))
   {
-    for (const string& name: phModelNames)
+    if (ImGui::BeginCombo("model", choosenPhModel))
     {
-      bool is_selected = (name == choosenPhModel);
-      if (ImGui::Selectable(name.c_str(), is_selected))
-        strcpy(choosenPhModel, name.c_str());
-      if (is_selected)
-        ImGui::SetItemDefaultFocus(); // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+      for (const string &name : phModelNames)
+      {
+        bool is_selected = (name == choosenPhModel);
+        if (ImGui::Selectable(name.c_str(), is_selected))
+          strcpy(choosenPhModel, name.c_str());
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
     }
-    ImGui::EndCombo();
-  }
-  ImGui::Checkbox("show hitbox", &showActiveModelHitbox);
-  if (ImGui::Button("Choose"))
-  {
-    activeModel = app.getPhysicalModel(choosenPhModel);
-  }
-  ImGui::End();
-  // hitbox
-  if (showActiveModelHitbox && activeModel != nullptr && hitboxModel != nullptr)
-  {
-    mat4 hitboxMat(1.0f);
-    hitboxMat = glm::translate(hitboxMat, activeModel->position);
-    hitboxMat = glm::scale(hitboxMat, {activeModel->width, activeModel->height, activeModel->depth});
-    hitboxModel->bind();
-    hitboxModel->draw(glm::value_ptr(hitboxMat));
-    ImGui::Begin("hitbox size");
-    ImGui::SliderFloat("width", &(activeModel->width), 0.1f, 10.0f);
-    ImGui::SliderFloat("height", &(activeModel->height), 0.1f, 10.0f);
-    ImGui::SliderFloat("depth", &(activeModel->depth), 0.1f, 10.0f);
-    ImGui::End();
+    ImGui::Checkbox("show hitbox", &showActiveModelHitbox);
+    if (ImGui::Button("Choose!"))
+    {
+      activeModel = app.getPhysicalModel(choosenPhModel);
+    }
+    // hitbox
+    if (showActiveModelHitbox && activeModel != nullptr && hitboxModel != nullptr)
+    {
+      mat4 hitboxMat(1.0f);
+      hitboxMat = glm::translate(hitboxMat, activeModel->position);
+      hitboxMat = glm::scale(hitboxMat, {activeModel->width, activeModel->height, activeModel->depth});
+      hitboxModel->bind();
+      hitboxModel->draw(glm::value_ptr(hitboxMat));
+      ImGui::SliderFloat("hitbox width", &(activeModel->width), 0.1f, 10.0f);
+      ImGui::SliderFloat("hitbox height", &(activeModel->height), 0.1f, 10.0f);
+      ImGui::SliderFloat("hitbox depth", &(activeModel->depth), 0.1f, 10.0f);
+    }
+    if (activeModel != nullptr)
+    {
+      ImGui::Checkbox("collidable", &(activeModel->collidable));
+      ImGui::Checkbox("falling", &(activeModel->falling));
+      ImGui::SliderFloat("visual scale", &(activeModel->scale), 0.1f, 10.0f);
+    }
   }
   // save/load
-  ImGui::Begin("Save/load world");
-  ImGui::InputText("file", worldPath, sizeof(char) * 128);
-  if (ImGui::Button("Save"))
+  if (ImGui::CollapsingHeader("Save/load world"))
   {
-    app.saveConfiguration(worldPath);
-  }
-  if (ImGui::Button("Load"))
-  {
-    app.loadConfiguration(worldPath);
+    ImGui::InputText("file", worldPath, sizeof(char) * 128);
+    if (ImGui::Button("Save!"))
+    {
+      app.saveConfiguration(worldPath);
+    }
+    if (ImGui::Button("Load!"))
+    {
+      app.loadConfiguration(worldPath);
+    }
   }
   ImGui::End();
 }

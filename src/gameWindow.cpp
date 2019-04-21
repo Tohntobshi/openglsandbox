@@ -23,6 +23,8 @@ void GameWindow::createWindow(int width, int height)
   context = SDL_GL_CreateContext(window);
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
   // glDisable(GL_CULL_FACE);
   // int maxVertAttrs;
   // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertAttrs);
