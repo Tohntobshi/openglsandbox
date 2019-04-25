@@ -24,6 +24,7 @@ public:
       vec3 position,
       bool falling,
       bool collidable,
+      bool active,
       float width,
       float height,
       float depth,
@@ -52,6 +53,7 @@ public:
   float scale;
   bool falling;
   bool collidable;
+  bool active;
   friend App;
   friend Controls;
 };

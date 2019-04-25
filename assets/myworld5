@@ -1,8 +1,0 @@
-sh textured ../assets/textured.glsl
-sh strange ../assets/strange.glsl
-vm mug strange ../assets/mug.obj 
-vm cube strange ../assets/cube.obj 
-vm donut textured ../assets/donut2.obj ../assets/donut2.png
-pm mug0 mug 16.6 0 -10.4 0 0 1 1 1 0 0 0 1
-pm donut0 donut 7.2 0 0 0 0 1 1 1 0 0 0 1
-pm donut1 donut 7.44142 16.5 -0.251471 0 0 1 1 1 0 0 0 1

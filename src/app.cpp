@@ -16,7 +16,8 @@ using std::runtime_error;
 
 App::App() : camera_vertical_rotation(0.0f),
              camera_horizontal_rotation(0.0f),
-             camera_position(0.0f)
+             camera_position(0.0f),
+             camera_distance(10.0f)
 {
 }
 
@@ -38,7 +39,7 @@ void App::updateCamera()
   else
   {
     camTarget = camera_position;
-    camPosition = camTarget + (camDirection * 10.0f);
+    camPosition = camTarget - (camDirection * camera_distance);
   }
   mat4 viewMatrix = glm::lookAt(camPosition, camTarget, camUp);
   mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -56,114 +57,117 @@ void App::updatePhModels()
   for (auto pair : physical_models)
   {
     auto &model = pair.second;
-    vec3 &position = model->position;
-    vec3 fall = vec3(0.0f, -1.0f, 0.0f) * model->fallSpeed;
-    vec3 jump = vec3(0.0f, 1.0f, 0.0f) * model->jumpSpeed;
-    vec3 move = model->direction * model->moveSpeed;
-    vec3 movement = fall + jump + move;
-    vec3 newPosition = position + movement;
-    // speed update ------------------------------------------------
-    model->jumpSpeed = glm::max(model->jumpSpeed - 0.1f, 0.0f);
-    if (model->moveSpeed < model->targetSpeed)
+    if (model->active)
     {
-      model->moveSpeed += 0.1f;
-    }
-    else
-    {
-      model->targetSpeed = 0.0f;
-      model->moveSpeed = glm::max(model->moveSpeed - 0.1f, 0.0f);
-    }
-    if (model->falling)
-    {
-      model->fallSpeed += 0.01f;
-    }
-    else
-    {
-      model->fallSpeed = 0.0f;
-    }
-    // =============================================================
-    if (model->collidable)
-    {
-      // collision detection
-      float mod_half_width = model->width / 2.0f;
-      float mod_half_height = model->height / 2.0f;
-      float mod_half_depth = model->depth / 2.0f;
+      vec3 &position = model->position;
+      vec3 fall = vec3(0.0f, -1.0f, 0.0f) * model->fallSpeed;
+      vec3 jump = vec3(0.0f, 1.0f, 0.0f) * model->jumpSpeed;
+      vec3 move = model->direction * model->moveSpeed;
+      vec3 movement = fall + jump + move;
+      vec3 newPosition = position + movement;
+      // speed update ------------------------------------------------
+      model->jumpSpeed = glm::max(model->jumpSpeed - 0.1f, 0.0f);
+      if (model->moveSpeed < model->targetSpeed)
+      {
+        model->moveSpeed += 0.1f;
+      }
+      else
+      {
+        model->targetSpeed = 0.0f;
+        model->moveSpeed = glm::max(model->moveSpeed - 0.1f, 0.0f);
+      }
+      if (model->falling)
+      {
+        model->fallSpeed += 0.01f;
+      }
+      else
+      {
+        model->fallSpeed = 0.0f;
+      }
+      // =============================================================
+      if (model->collidable)
+      {
+        // collision detection
+        float mod_half_width = model->width / 2.0f;
+        float mod_half_height = model->height / 2.0f;
+        float mod_half_depth = model->depth / 2.0f;
 
-      float left_x = position.x - mod_half_width;
-      float right_x = position.x + mod_half_width;
-      float front_z = position.z - mod_half_depth;
-      float back_z = position.z + mod_half_depth;
-      float bottom_y = position.y - mod_half_height;
-      float top_y = position.y + mod_half_height;
-      float next_left_x = newPosition.x - mod_half_width;
-      float next_right_x = newPosition.x + mod_half_width;
-      float next_front_z = newPosition.z - mod_half_depth;
-      float next_back_z = newPosition.z + mod_half_depth;
-      float next_bottom_y = newPosition.y - mod_half_height;
-      float next_top_y = newPosition.y + mod_half_height;
-      bool stopFall = false;
-      bool stopJump = false;
-      bool stopMove = false;
-      for (auto pair2 : physical_models)
-      {
-        auto &comparedModel = pair2.second;
-        if (model == comparedModel || !comparedModel->collidable)
+        float left_x = position.x - mod_half_width;
+        float right_x = position.x + mod_half_width;
+        float front_z = position.z - mod_half_depth;
+        float back_z = position.z + mod_half_depth;
+        float bottom_y = position.y - mod_half_height;
+        float top_y = position.y + mod_half_height;
+        float next_left_x = newPosition.x - mod_half_width;
+        float next_right_x = newPosition.x + mod_half_width;
+        float next_front_z = newPosition.z - mod_half_depth;
+        float next_back_z = newPosition.z + mod_half_depth;
+        float next_bottom_y = newPosition.y - mod_half_height;
+        float next_top_y = newPosition.y + mod_half_height;
+        bool stopFall = false;
+        bool stopJump = false;
+        bool stopMove = false;
+        for (auto pair2 : physical_models)
         {
-          continue;
-        }
-        float cmp_mod_half_width = comparedModel->width / 2.0f;
-        float cmp_mod_half_height = comparedModel->height / 2.0f;
-        float cmp_mod_half_depth = comparedModel->depth / 2.0f;
+          auto &comparedModel = pair2.second;
+          if (model == comparedModel || !comparedModel->collidable)
+          {
+            continue;
+          }
+          float cmp_mod_half_width = comparedModel->width / 2.0f;
+          float cmp_mod_half_height = comparedModel->height / 2.0f;
+          float cmp_mod_half_depth = comparedModel->depth / 2.0f;
 
-        vec3 &comparedPosition = comparedModel->position;
-        float cmpLeftX = comparedPosition.x - cmp_mod_half_width;
-        float cmpRightX = comparedPosition.x + cmp_mod_half_width;
-        float cmpFrontZ = comparedPosition.z - cmp_mod_half_depth;
-        float cmpBackZ = comparedPosition.z + cmp_mod_half_depth;
-        float cmpBottomY = comparedPosition.y - cmp_mod_half_height;
-        float cmpTopY = comparedPosition.y + cmp_mod_half_height;
-        if (
-            (next_left_x <= cmpRightX && next_left_x >= cmpLeftX || next_right_x >= cmpLeftX && next_right_x <= cmpRightX) // x collision
-            &&
-            (next_top_y >= cmpBottomY && next_top_y <= cmpTopY || next_bottom_y <= cmpTopY && next_bottom_y >= cmpBottomY) // y collision
-            &&
-            (next_front_z <= cmpBackZ && next_front_z >= cmpFrontZ || next_back_z >= cmpFrontZ && next_back_z <= cmpBackZ) // z collision
-        )
-        {
-          if (bottom_y > cmpTopY)
+          vec3 &comparedPosition = comparedModel->position;
+          float cmpLeftX = comparedPosition.x - cmp_mod_half_width;
+          float cmpRightX = comparedPosition.x + cmp_mod_half_width;
+          float cmpFrontZ = comparedPosition.z - cmp_mod_half_depth;
+          float cmpBackZ = comparedPosition.z + cmp_mod_half_depth;
+          float cmpBottomY = comparedPosition.y - cmp_mod_half_height;
+          float cmpTopY = comparedPosition.y + cmp_mod_half_height;
+          if (
+              (next_left_x <= cmpRightX && next_left_x >= cmpLeftX || next_right_x >= cmpLeftX && next_right_x <= cmpRightX) // x collision
+              &&
+              (next_top_y >= cmpBottomY && next_top_y <= cmpTopY || next_bottom_y <= cmpTopY && next_bottom_y >= cmpBottomY) // y collision
+              &&
+              (next_front_z <= cmpBackZ && next_front_z >= cmpFrontZ || next_back_z >= cmpFrontZ && next_back_z <= cmpBackZ) // z collision
+          )
           {
-            stopFall = true;
-            model->fallSpeed = 0.0f;
-          }
-          else if (top_y < cmpBottomY)
-          {
-            stopJump = true;
-            model->jumpSpeed = 0.0f;
-          }
-          else
-          {
-            stopMove = true;
-            model->moveSpeed = 0.0f;
-            model->targetSpeed = 0.0f;
+            if (bottom_y > cmpTopY)
+            {
+              stopFall = true;
+              model->fallSpeed = 0.0f;
+            }
+            else if (top_y < cmpBottomY)
+            {
+              stopJump = true;
+              model->jumpSpeed = 0.0f;
+            }
+            else
+            {
+              stopMove = true;
+              model->moveSpeed = 0.0f;
+              model->targetSpeed = 0.0f;
+            }
           }
         }
+        if (!stopFall)
+        {
+          model->position += fall;
+        }
+        if (!stopJump)
+        {
+          model->position += jump;
+        }
+        if (!stopMove)
+        {
+          model->position += move;
+        }
       }
-      if (!stopFall)
+      else
       {
-        model->position += fall;
+        model->position = newPosition;
       }
-      if (!stopJump)
-      {
-        model->position += jump;
-      }
-      if (!stopMove)
-      {
-        model->position += move;
-      }
-    }
-    else
-    {
-      model->position = newPosition;
     }
     model->draw();
   }
@@ -227,6 +231,9 @@ void App::changeCameraMode(CameraMode mode)
 
 void App::addShader(string identifier, string shaderpath)
 {
+  if (identifier == "") {
+    throw runtime_error("no identifier");
+  }
   if (shaders.find(identifier) != shaders.end())
   {
     throw runtime_error("identifier " + identifier + " already exists");
@@ -242,6 +249,9 @@ void App::addVisualModel(
     string modelpath,
     string texturepath)
 {
+  if (identifier == "") {
+    throw runtime_error("no identifier");
+  }
   if (visual_models.find(identifier) != visual_models.end())
   {
     throw runtime_error("identifier " + identifier + " already exists");
@@ -274,6 +284,7 @@ void App::addPhysicalModel(
     vec3 position,
     bool falling,
     bool collidable,
+    bool active,
     float width,
     float height,
     float depth,
@@ -282,6 +293,9 @@ void App::addPhysicalModel(
     float roll,
     float scale)
 {
+  if (identifier == "") {
+    throw runtime_error("no identifier");
+  }
   if (physical_models.find(identifier) != physical_models.end())
   {
     throw runtime_error("identifier " + identifier + " already exists");
@@ -293,6 +307,7 @@ void App::addPhysicalModel(
       position,
       falling,
       collidable,
+      active,
       width,
       height,
       depth,
@@ -351,7 +366,7 @@ void App::saveConfiguration(string filename)
     auto &pm = phmodel.second;
     file << "pm " << pm->identifier << " " << pm->visModId << " "
          << pm->position.x << " " << pm->position.y << " " << pm->position.z << " "
-         << pm->falling << " " << pm->collidable << " "
+         << pm->falling << " " << pm->collidable << " " << pm->active << " "
          << pm->width << " " << pm->height << " " << pm->depth << " "
          << pm->pitch << " " << pm->yaw << " " << pm->roll << " "
          << pm->scale << "\n";
@@ -413,18 +428,18 @@ void App::loadConfiguration(string filepath)
       char identifier[128] = "";
       char vismodname[128] = "";
       float x, y, z;
-      bool falling, collidable;
+      int falling, collidable, active;
       float width, height, depth;
       float pitch, yaw, roll, scale;
-      if (sscanf(line.c_str(), "pm %127s %127s %f %f %f %i %i %f %f %f %f %f %f %f\n", identifier, vismodname,
-                 &x, &y, &z, &falling, &collidable, &width, &height, &depth, &pitch, &yaw, &roll, &scale) != 14)
+      if (sscanf(line.c_str(), "pm %127s %127s %f %f %f %i %i %i %f %f %f %f %f %f %f\n", identifier, vismodname,
+                 &x, &y, &z, &falling, &collidable, &active, &width, &height, &depth, &pitch, &yaw, &roll, &scale) != 15)
       {
         file.close();
         throw runtime_error("Cannot read file " + filepath);
       }
       try
       {
-        addPhysicalModel(identifier, vismodname, {x, y, z}, falling, collidable, width, height, depth,
+        addPhysicalModel(identifier, vismodname, {x, y, z}, falling, collidable, active, width, height, depth,
                          pitch, yaw, roll, scale);
       }
       catch (runtime_error &e)

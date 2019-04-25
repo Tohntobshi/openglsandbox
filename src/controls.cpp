@@ -1,12 +1,15 @@
 #include "controls.h"
 #include <iostream>
+#include <stdexcept>
+#include <SDL2/SDL_opengles2.h>
 
 using std::cout;
+using std::runtime_error;
 
 Controls::Controls(App &app) : app(app), io(ImGui::GetIO())
 {
-  app.addShader("strange", "../assets/strange.glsl");
-  app.addVisualModel("cube", "strange", "../assets/cube.obj", "");
+  app.addShader("hitbox", "../assets/hitbox.glsl");
+  app.addVisualModel("cube", "hitbox", "../assets/cube.obj", "");
   hitboxModel = app.getVisualModel("cube");
 }
 
@@ -46,6 +49,24 @@ void Controls::processEvent(SDL_Event e)
     case SDL_SCANCODE_L:
       lpressed = true;
       break;
+    case SDL_SCANCODE_U:
+      upressed = true;
+      break;
+    case SDL_SCANCODE_O:
+      opressed = true;
+      break;
+    case SDL_SCANCODE_Q:
+      qpressed = true;
+      break;
+    case SDL_SCANCODE_Z:
+      zpressed = true;
+      break;
+    case SDL_SCANCODE_COMMA:
+      commapressed = true;
+      break;
+    case SDL_SCANCODE_PERIOD:
+      dotpressed = true;
+      break;
     case SDL_SCANCODE_SPACE:
       if (activeModel != nullptr)
       {
@@ -82,6 +103,24 @@ void Controls::processEvent(SDL_Event e)
     case SDL_SCANCODE_L:
       lpressed = false;
       break;
+    case SDL_SCANCODE_U:
+      upressed = false;
+      break;
+    case SDL_SCANCODE_O:
+      opressed = false;
+      break;
+    case SDL_SCANCODE_Q:
+      qpressed = false;
+      break;
+    case SDL_SCANCODE_Z:
+      zpressed = false;
+      break;
+    case SDL_SCANCODE_COMMA:
+      commapressed = false;
+      break;
+    case SDL_SCANCODE_PERIOD:
+      dotpressed = false;
+      break;
     }
   }
   if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
@@ -98,64 +137,95 @@ void Controls::processEvent(SDL_Event e)
   }
 }
 
-void Controls::update()
+void Controls::passInputsToApp()
 {
+  if (cameraFollowsActiveModel && activeModel != nullptr)
+  {
+    app.moveCameraTo(activeModel->position);
+    app.camera_mode = THIRD_PERSON;
+  }
   if (!io.WantCaptureKeyboard)
   {
     if (apressed)
     {
-      app.moveCameraSideways(-1.0);
+      app.moveCameraSideways(-0.1f);
     }
     if (dpressed)
     {
-      app.moveCameraSideways(1.0);
+      app.moveCameraSideways(0.1f);
     }
     if (wpressed)
     {
-      app.moveCameraStraight(1.0f);
+      app.moveCameraStraight(0.1f);
     }
     if (spressed)
     {
-      app.moveCameraStraight(-1.0f);
+      app.moveCameraStraight(-0.1f);
     }
-
+    if (qpressed)
+    {
+      app.moveCameraBy(vec3(0.0, 0.1, 0.0));
+    }
+    if (zpressed)
+    {
+      app.moveCameraBy(vec3(0.0, -0.1, 0.0));
+    }
     if (activeModel != nullptr)
     {
-      if (ipressed && lpressed)
+      // if (ipressed && lpressed)
+      // {
+      //   activeModel->move(vec3(1.0f, 0.0f, 1.0f));
+      // }
+      // else if (kpressed && lpressed)
+      // {
+      //   activeModel->move(vec3(-1.0f, 0.0f, 1.0f));
+      // }
+      // else if (jpressed && kpressed)
+      // {
+      //   activeModel->move(vec3(-1.0f, 0.0f, -1.0f));
+      // }
+      // else if (ipressed && jpressed)
+      // {
+      //   activeModel->move(vec3(1.0f, 0.0f, -1.0f));
+      // }
+      if (commapressed)
       {
-        activeModel->move(vec3(1.0f, 0.0f, 1.0f));
+        activeModel->move(vec3(-1.0, 0.0,0.0));
       }
-      else if (kpressed && lpressed)
+      if (dotpressed)
       {
-        activeModel->move(vec3(-1.0f, 0.0f, 1.0f));
+        activeModel->move(vec3(1.0, 0.0,0.0));
       }
-      else if (jpressed && kpressed)
+      if (ipressed)
       {
-        activeModel->move(vec3(-1.0f, 0.0f, -1.0f));
-      }
-      else if (ipressed && jpressed)
-      {
-        activeModel->move(vec3(1.0f, 0.0f, -1.0f));
-      }
-      else if (ipressed)
-      {
-        activeModel->move(vec3(1.0f, 0.0f, 0.0f));
+        activeModel->position += vec3(0.0f, 0.1f, 0.0f);
       }
       else if (kpressed)
       {
-        activeModel->move(vec3(-1.0f, 0.0f, 0.0f));
+        activeModel->position += vec3(0.0f, -0.1f, 0.0f);
       }
       else if (jpressed)
       {
-        activeModel->move(vec3(0.0f, 0.0f, -1.0f));
+        activeModel->position += vec3(-0.1f, 0.0f, 0.0f);
       }
       else if (lpressed)
       {
-        activeModel->move(vec3(0.0f, 0.0f, 1.0f));
+        activeModel->position += vec3(0.1f, 0.0f, 0.0f);
+      }
+      else if (upressed)
+      {
+        activeModel->position += vec3(0.0f, 0.0f, 0.1f);
+      }
+      else if (opressed)
+      {
+        activeModel->position += vec3(0.0f, 0.0f, -0.1f);
       }
     }
   }
-  app.update();
+}
+
+void Controls::drawGUI()
+{
   const vector<string> &shaderNames = app.getShaderNames();
   const vector<string> &visModelNames = app.getVisModelNames();
   const vector<string> &phModelNames = app.getPhModelNames();
@@ -167,7 +237,16 @@ void Controls::update()
     ImGui::InputText("shader name", shaderName, sizeof(char) * 128);
     if (ImGui::Button("Add shader!"))
     {
-      app.addShader(shaderName, shaderPath);
+      try
+      {
+        app.addShader(shaderName, shaderPath);
+        strcpy(shaderPath, "../assets/");
+        strcpy(shaderName, "");
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
     }
   }
   // visual model window
@@ -185,12 +264,31 @@ void Controls::update()
       }
       ImGui::EndCombo();
     }
-    ImGui::InputText("model path", modelPath, sizeof(char) * 128);
+    ImGui::Checkbox("use 2d plane as model", &usePlaneObj);
+    if (!usePlaneObj)
+    {
+      ImGui::InputText("model path", modelPath, sizeof(char) * 128);
+    }
     ImGui::InputText("texture path", texPath, sizeof(char) * 128);
     ImGui::InputText("model name", modelName, sizeof(char) * 128);
     if (ImGui::Button("Add visual model!"))
     {
-      app.addVisualModel(modelName, choosenShader, modelPath, texPath);
+      try
+      {
+        app.addVisualModel(
+          modelName,
+          choosenShader,
+          usePlaneObj ? "../assets/plane.obj" : modelPath,
+          texPath
+        );
+        strcpy(modelPath, "../assets/");
+        strcpy(texPath, "../assets/");
+        strcpy(modelName, "");
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
     }
   }
 
@@ -210,11 +308,20 @@ void Controls::update()
       ImGui::EndCombo();
     }
     ImGui::InputText("ph model name", phModelName, sizeof(char) * 128);
-    ImGui::Checkbox("falling", &fallCheckbox);
-    ImGui::Checkbox("collidable", &collidableCheckbox);
+    ImGui::Checkbox("falling", &fallCheckbox); ImGui::SameLine();
+    ImGui::Checkbox("collidable", &collidableCheckbox); ImGui::SameLine();
+    ImGui::Checkbox("active", &activeCheckbox);
     if (ImGui::Button("Add physical model!"))
     {
-      app.addPhysicalModel(phModelName, choosenModel, vec3(0.0f), fallCheckbox, collidableCheckbox);
+      try
+      {
+        app.addPhysicalModel(phModelName, choosenModel, app.camera_position, fallCheckbox, collidableCheckbox, activeCheckbox);
+        strcpy(phModelName, "");
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
     }
   }
   // choose active model
@@ -226,17 +333,16 @@ void Controls::update()
       {
         bool is_selected = (name == choosenPhModel);
         if (ImGui::Selectable(name.c_str(), is_selected))
+        {
           strcpy(choosenPhModel, name.c_str());
+          activeModel = app.getPhysicalModel(choosenPhModel);
+        }
         if (is_selected)
           ImGui::SetItemDefaultFocus();
       }
       ImGui::EndCombo();
     }
     ImGui::Checkbox("show hitbox", &showActiveModelHitbox);
-    if (ImGui::Button("Choose!"))
-    {
-      activeModel = app.getPhysicalModel(choosenPhModel);
-    }
     // hitbox
     if (showActiveModelHitbox && activeModel != nullptr && hitboxModel != nullptr)
     {
@@ -251,9 +357,76 @@ void Controls::update()
     }
     if (activeModel != nullptr)
     {
-      ImGui::Checkbox("collidable", &(activeModel->collidable));
-      ImGui::Checkbox("falling", &(activeModel->falling));
+      ImGui::Checkbox("collidable model", &(activeModel->collidable)); ImGui::SameLine();
+      ImGui::Checkbox("falling model", &(activeModel->falling)); ImGui::SameLine();
+      ImGui::Checkbox("active model", &(activeModel->active));
       ImGui::SliderFloat("visual scale", &(activeModel->scale), 0.1f, 10.0f);
+      // ImGui::InputFloat("x pos", )
+    }
+  }
+  // copy physical model
+  if (ImGui::CollapsingHeader("Copy model"))
+  {
+    if (ImGui::BeginCombo("model to copy", choosenPhModelToCopy))
+    {
+      for (const string &name : phModelNames)
+      {
+        bool is_selected = (name == choosenPhModelToCopy);
+        if (ImGui::Selectable(name.c_str(), is_selected))
+        {
+          strcpy(choosenPhModelToCopy, name.c_str());
+        }
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
+    }
+    ImGui::InputText("copy model name", phModelName, sizeof(char) * 128);
+    if (ImGui::Button("Copy model!") && strcmp(choosenPhModelToCopy, "") != 0)
+    {
+      auto modToCpy = app.getPhysicalModel(choosenPhModelToCopy);
+      try
+      {
+        app.addPhysicalModel(
+          phModelName, 
+          modToCpy->visModId,
+          app.camera_position,
+          modToCpy->falling,
+          modToCpy->collidable,
+          modToCpy->active,
+          modToCpy->width,
+          modToCpy->height,
+          modToCpy->depth,
+          modToCpy->pitch,
+          modToCpy->yaw,
+          modToCpy->roll,
+          modToCpy->scale
+        );
+      }
+      catch (runtime_error e)
+      {
+        cout << e.what() << "\n";
+      }
+    }
+  }
+  // camera options
+  if (ImGui::CollapsingHeader("Camera options"))
+  {
+    if (ImGui::RadioButton("first person", app.camera_mode == FIRST_PERSON))
+    {
+      app.camera_mode = FIRST_PERSON;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("third person", app.camera_mode == THIRD_PERSON))
+    {
+      app.camera_mode = THIRD_PERSON;
+    }
+    ImGui::Checkbox("follow active model", &cameraFollowsActiveModel);
+    ImGui::SliderFloat("camera distance", &app.camera_distance, 1.0f, 50.0f);
+    ImGui::ColorEdit4("Backround color", backGroundColor);
+    if (ImGui::Button("Apply background color!"))
+    {
+      glClearColor(backGroundColor[0], backGroundColor[1], backGroundColor[2], backGroundColor[3]);
     }
   }
   // save/load
@@ -262,12 +435,44 @@ void Controls::update()
     ImGui::InputText("file", worldPath, sizeof(char) * 128);
     if (ImGui::Button("Save!"))
     {
-      app.saveConfiguration(worldPath);
+      try
+      {
+        app.saveConfiguration(worldPath);
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
     }
     if (ImGui::Button("Load!"))
     {
-      app.loadConfiguration(worldPath);
+      try
+      {
+        app.loadConfiguration(worldPath);
+      }
+      catch (runtime_error &e)
+      {
+        cout << e.what() << "\n";
+      }
     }
   }
   ImGui::End();
+}
+
+void Controls::update()
+{
+  if (gameMode)
+  {
+    passInputsToAppInGameMode();
+  }
+  else
+  {
+    passInputsToApp();
+    drawGUI();
+  }
+  app.update();
+}
+
+void Controls::passInputsToAppInGameMode()
+{
 }

@@ -22,13 +22,14 @@ void GameWindow::createWindow(int width, int height)
   window = SDL_CreateWindow("SDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
   context = SDL_GL_CreateContext(window);
   glEnable(GL_DEPTH_TEST);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-  // glDisable(GL_CULL_FACE);
-  // int maxVertAttrs;
-  // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertAttrs);
-  // std::cout << "GL_MAX_VERTEX_ATTRIBS " << maxVertAttrs << std::endl;
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  // glBlendColor(1.0f, 0.0f, 1.0f, 1.0f);
+  // glEnable(GL_BLEND);
+  // glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+  // glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGui::StyleColorsDark();

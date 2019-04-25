@@ -1,6 +1,6 @@
-sh sprite ../assets/textured.1.glsl
-sh strange ../assets/strange.glsl
+sh sprite ../assets/sprite.glsl
+sh hitbox ../assets/hitbox.glsl
 vm island sprite ../assets/plane.obj ../assets/island.png
-vm cube strange ../assets/cube.obj 
-pm island1 island -2 0 -0.4 0 1 1 1 1 0 0 0 1
-pm island0 island -5.5 0 -9.68575e-08 0 1 1.642 0.597 1 0 0 0 1.891
+vm cube hitbox ../assets/cube.obj 
+pm island1 island 0.116532 0.1 -0.903131 0 1 0 1 0.1 4.785 0 0 0 1
+pm island0 island 0 0 0 0 1 0 0.763 0.144 5.669 0 0 0 1

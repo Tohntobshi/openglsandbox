@@ -1,0 +1,12 @@
+sh sprite ../assets/sprite.glsl
+sh hitbox ../assets/hitbox.glsl
+vm tree1 sprite ../assets/plane.obj ../assets/tree1.png
+vm death sprite ../assets/plane.obj ../assets/death.png
+vm cube hitbox ../assets/cube.obj 
+vm ground1 sprite ../assets/plane.obj ../assets/ground1.png
+pm tree1-1 tree1 6.47213 0.911523 6.49454 0 0 0 1 1 1 0 0 0 2.354
+pm ground1 ground1 0 0 0 0 1 0 5.271 0.321 7.658 0 0 0 5.271
+pm ground1-2 ground1 5.18058 -0.00244571 -0.0756704 0 1 0 5.271 0.321 7.658 0 0 0 5.271
+pm ground1-3 ground1 9.57711 -0.202446 0.0254029 0 1 0 5.271 0.321 7.658 0 0 0 5.271
+pm ground1-4 ground1 13.5747 -0.202446 -0.114195 0 1 0 5.271 0.321 7.658 0 0 0 5.271
+pm death death 4.57767 0.724428 0.765087 1 1 1 0.365 1.117 2.133 0 0 0 1.956
